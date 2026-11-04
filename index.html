@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Latihan Soal TKA</title>
+  <style>
+    /* CSS Sederhana */
+    body { font-family: sans-serif; background: #f3f4f6; margin: 0; padding: 20px; }
+    .card { background: white; max-width: 600px; margin: 40px auto; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+    input { width: 100%; padding: 10px; margin: 8px 0; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
+    button { width: 100%; padding: 10px; background: #2563eb; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; }
+    .hidden { display: none; }
+    .soal-box { margin-bottom: 20px; padding-bottom: 15px; border-bottom: 1px dashed #ccc; }
+    .pilihan { display: block; margin: 5px 0; cursor: pointer; }
+  </style>
+</head>
+<body>
+
+  <!-- Area Login -->
+  <div id="login-section" class="card">
+    <h2>Login Latihan TKA</h2>
+    <input type="email" id="email" placeholder="Email Anda">
+    <input type="password" id="password" placeholder="Password">
+    <button onclick="prosesLogin()">Masuk</button>
+    <p id="login-msg" style="color:red; font-size:14px; text-align:center;"></p>
+  </div>
+
+  <!-- Area Kuis -->
+  <div id="kuis-section" class="card hidden">
+    <h2>Halo, <span id="nama-user"></span>!</h2>
+    <div id="wadah-soal"></div>
+    <button onclick="hitungSkor()">Selesai & Lihat Skor</button>
+  </div>
+
+  <!-- Area Hasil -->
+  <div id="hasil-section" class="card hidden">
+    <h2>Hasil Latihan</h2>
+    <p>Nilai Anda: <strong id="nilai-akhir" style="font-size:24px;"></strong></p>
+    <p id="kategori-nilai"></p>
+    <button onclick="location.reload()">Kembali ke Login</button>
+  </div>
+
+  <script>
+    // GANTI DENGAN URL WEB APP GAS ANDA
+    var GAS_URL = "https://script.google.com/macros/s/AKfycbwYQpw801zHrr34qNaAjTkIRxDLXR_3ieFvH_MH8QrtcqARqcflzlbbtc8twn-1rtD4/exec";
+    var dataSoal = [];
+    var namaSiswa = "";
+
+    // 1. Fungsi Login via JSONP
+    function prosesLogin() {
+      var email = document.getElementById('email').value;
+      var pass = document.getElementById('password').value;
+      var msg = document.getElementById('login-msg');
+      msg.innerText = "Memeriksa...";
+
+      // Buat nama fungsi callback unik
+      var callbackName = 'jsonp_' + Math.round(100000 * Math.random());
+      
+      window[callbackName] = function(response) {
+        if (response.ok) {
+          namaSiswa = response.nama;
+          document.getElementById('login-section').classList.add('hidden');
+          document.getElementById('kuis-section').classList.remove('hidden');
+          document.getElementById('nama-user').innerText = namaSiswa;
+          muatSoal();
+        } else {
+          msg.innerText = response.message;
+        }
+        document.body.removeChild(script);
+        delete window[callbackName];
+      };
+
+      var script = document.createElement('script');
+      script.src = GAS_URL + '?action=login&callback=' + callbackName + 
+                   '&email=' + encodeURIComponent(email) + 
+                   '&password=' + encodeURIComponent(pass);
+      document.body.appendChild(script);
+    }
+
+    // 2. Muat Soal dari XML
+    function muatSoal() {
+      fetch('soal.xml')
+        .then(r => r.text())
+        .then(str => {
+          var parser = new DOMParser();
+          var xmlDoc = parser.parseFromString(str, "text/xml");
+          var soals = xmlDoc.getElementsByTagName("soal");
+          
+          var html = "";
+          for (var i = 0; i < soals.length; i++) {
+            var id = soals[i].getAttribute("id");
+            var tipe = soals[i].getAttribute("tipe");
+            var tanya = soals[i].getElementsByTagName("pertanyaan")[0].textContent;
+            
+            html += `<div class="soal-box" id="box-${id}">`;
+            html += `<p><strong>Soal ${id}</strong><br>${tanya}</p>`;
+            
+            if (tipe === "pg") {
+              var pils = soals[i].getElementsByTagName("pilihan");
+              for (var j = 0; j < pils.length; j++) {
+                // Ambil huruf depan (A, B, C, D)
+                var huruf = pils[j].textContent.trim().charAt(0);
+                html += `<label class="pilihan">
+                  <input type="radio" name="jawab_${id}" value="${huruf}"> ${pils[j].textContent}
+                </label>`;
+              }
+            } else {
+              // Isian singkat
+              html += `<input type="text" id="jawab_${id}" style="width:100%; padding:8px; margin-top:5px;" placeholder="Ketik jawaban...">`;
+            }
+            html += `</div>`;
+            // Simpan kunci jawaban di atribut data
+            html += `<input type="hidden" id="kunci_${id}" value="${soals[i].getElementsByTagName("jawaban")[0].textContent}">`;
+            html += `<input type="hidden" id="skor_${id}" value="${soals[i].getAttribute("skor")}">`;
+          }
+          document.getElementById('wadah-soal').innerHTML = html;
+        });
+    }
+
+    // 3. Hitung Skor
+    function hitungSkor() {
+      var totalSkor = 0;
+      var boxes = document.querySelectorAll('.soal-box');
+      
+      boxes.forEach(function(box) {
+        var id = box.id.replace('box-', '');
+        var kunci = document.getElementById('kunci_' + id).value.trim().toLowerCase();
+        var skorPerSoal = parseInt(document.getElementById('skor_' + id).value);
+        var jawabanUser = "";
+
+        // Cek apakah PG atau Isian
+        var radios = document.getElementsByName('jawab_' + id);
+        if (radios.length > 0) {
+          for (var i = 0; i < radios.length; i++) {
+            if (radios[i].checked) jawabanUser = radios[i].value;
+          }
+        } else {
+          jawabanUser = document.getElementById('jawab_' + id).value;
+        }
+
+        // Cocokkan jawaban
+        if (jawabanUser.trim().toLowerCase() === kunci) {
+          totalSkor += skorPerSoal;
+        }
+      });
+
+      // Tampilkan Hasil
+      document.getElementById('kuis-section').classList.add('hidden');
+      document.getElementById('hasil-section').classList.remove('hidden');
+      
+      // Karena total maksimal di file txt Anda 100, kita langsung pakai totalSkor
+      document.getElementById('nilai-akhir').innerText = totalSkor;
+      
+      var ket = "";
+      if (totalSkor >= 85) ket = "Sangat Baik";
+      else if (totalSkor >= 70) ket = "Baik";
+      else if (totalSkor >= 55) ket = "Cukup";
+      else ket = "Perlu Bimbingan";
+      
+      document.getElementById('kategori-nilai').innerText = "Kategori: " + ket;
+    }
+  </script>
+</body>
+</html>
