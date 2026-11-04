@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<kuis>
+  <soal id="1" tipe="pg" skor="4">
+    <pertanyaan>Hasil dari -12 + 25 - (-8) adalah …</pertanyaan>
+    <pilihan>A. 5</pilihan>
+    <pilihan>B. 21</pilihan>
+    <pilihan>C. 29</pilihan>
+    <pilihan>D. 45</pilihan>
+    <jawaban>B</jawaban>
+  </soal>
+  <soal id="2" tipe="pg" skor="4">
+    <pertanyaan>Sebuah barang dijual dengan harga Rp240.000 setelah mendapat diskon 20%. Harga awal barang tersebut adalah …</pertanyaan>
+    <pilihan>A. Rp280.000</pilihan>
+    <pilihan>B. Rp288.000</pilihan>
+    <pilihan>C. Rp300.000</pilihan>
+    <pilihan>D. Rp320.000</pilihan>
+    <jawaban>C</jawaban>
+  </soal>
+  <soal id="3" tipe="isian" skor="5">
+    <pertanyaan>Hasil dari 3/4 + 2/5 adalah … (tulis dalam bentuk pecahan paling sederhana)</pertanyaan>
+    <jawaban>23/20</jawaban>
+  </soal>
+</kuis>
