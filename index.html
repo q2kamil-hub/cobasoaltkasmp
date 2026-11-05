@@ -12,26 +12,33 @@
     .card { background: white; max-width: 600px; margin: 40px auto; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
     input { width: 100%; padding: 10px; margin: 8px 0; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
     button { width: 100%; padding: 10px; background: #2563eb; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; }
-    .hidden { display: none; }
+    .hidden { display: none !important; }
     .soal-box { margin-bottom: 20px; padding-bottom: 15px; border-bottom: 1px dashed #ccc; }
     .pilihan { display: block; margin: 5px 0; cursor: pointer; }
   </style>
 </head>
 <body>
 
-  <!-- Area Login -->
+  <!-- Area Login & Banner Install -->
   <div id="login-section" class="card">
-    <!-- Banner Install PWA -->
-    <div id="pwa-banner" class="hidden" style="background: #eff6ff; border: 1px solid #bfdbfe; padding: 15px; border-radius: 6px; margin-bottom: 20px; text-align: center;">
-      <p style="margin: 0 0 10px 0; font-size: 14px; color: #1e3a8a;">Ingin aplikasi ini di HP Anda?</p>
-      <button onclick="installPWA()" style="background: #2563eb; padding: 8px;">📲 Install ke Layar Utama</button>
-      <p style="margin: 10px 0 0 0; font-size: 11px; color: #6b7280;">Setelah di-install, tutup tab ini dan buka ikon aplikasi di layar utama HP.</p>
+    
+    <!-- Banner Install PWA (Gerbang Instalasi) -->
+    <div id="pwa-banner" class="hidden" style="background: #eff6ff; border: 1px solid #bfdbfe; padding: 20px; border-radius: 8px; text-align: center; margin-bottom: 20px;">
+      <h3 style="margin-top: 0; color: #1e3a8a;">Akses Terkunci</h3>
+      <p style="font-size: 14px; color: #1e3a8a;">Untuk alasan keamanan dan kenyamanan, latihan soal hanya dapat diakses melalui Aplikasi.</p>
+      <button onclick="installPWA()" style="background: #2563eb; padding: 12px; font-size: 16px; margin-top: 10px;">📲 Install Aplikasi ke Perangkat</button>
+      <p style="margin-top: 15px; font-size: 12px; color: #6b7280;">Jika Anda sudah menginstal, pastikan Anda membuka aplikasi melalui ikon di Layar Utama (HP) atau Desktop (Laptop), bukan dari link browser ini.</p>
     </div>
-    <h2>Login Latihan TKA</h2>
-    <input type="email" id="email" placeholder="Email Anda">
-    <input type="password" id="password" placeholder="Password">
-    <button onclick="prosesLogin()">Masuk</button>
-    <p id="login-msg" style="color:red; font-size:14px; text-align:center;"></p>
+
+    <!-- Form Login (Disembunyikan jika belum install/standalone) -->
+    <div id="form-login-container" class="hidden">
+      <h2>Login Latihan TKA</h2>
+      <input type="email" id="email" placeholder="Email Anda">
+      <input type="password" id="password" placeholder="Password">
+      <button onclick="prosesLogin()">Masuk</button>
+      <p id="login-msg" style="color:red; font-size:14px; text-align:center;"></p>
+    </div>
+
   </div>
 
   <!-- Area Kuis -->
@@ -55,6 +62,70 @@
     var GAS_URL = "https://script.google.com/macros/s/AKfycbwYQpw801zHrr34qNaAjTkIRxDLXR_3ieFvH_MH8QrtcqARqcflzlbbtc8twn-1rtD4/exec";
     var dataSoal = [];
     var namaSiswa = "";
+
+    // ==========================================
+    // LOGIKA GERBANG INSTALASI PWA (SANGAT KETAT)
+    // ==========================================
+    
+    const pwaBanner = document.getElementById('pwa-banner');
+    const formLogin = document.getElementById('form-login-container');
+    const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+    const isInstalled = localStorage.getItem('pwa_installed') === 'true';
+    let deferredPrompt;
+
+    // Fungsi untuk membuka gerbang form login
+    function bukaGerbang() {
+      formLogin.classList.remove('hidden');
+      pwaBanner.classList.add('hidden');
+    }
+
+    // 1. Jika dibuka dari ikon aplikasi (Standalone) ATAU pernah di-install di browser ini
+    if (isStandalone || isInstalled) {
+      bukaGerbang();
+    }
+
+    // 2. Event saat browser siap menampilkan pop-up install
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();
+      deferredPrompt = e;
+      
+      // Selama belum di-install atau belum standalone, tampilkan banner
+      if (!isStandalone && !isInstalled) {
+        pwaBanner.classList.remove('hidden');
+      }
+    });
+
+    // 3. Fungsi saat tombol Install diklik
+    function installPWA() {
+      if (deferredPrompt) {
+        deferredPrompt.prompt();
+        deferredPrompt.userChoice.then((choiceResult) => {
+          if (choiceResult.outcome === 'accepted') {
+            // Simpan status bahwa user sudah klik install
+            localStorage.setItem('pwa_installed', 'true');
+            // Paksa refresh halaman
+            window.location.reload(); 
+          } else {
+            alert("Anda harus menginstal aplikasi ini untuk bisa login.");
+          }
+          deferredPrompt = null;
+        });
+      } else {
+        // Untuk iOS/iPhone atau browser yang tidak punya pop-up otomatis
+        alert("Browser Anda belum mendukung pop-up otomatis. Silakan klik menu titik tiga (Chrome) atau ikon Share (Safari), lalu pilih 'Tambahkan ke Layar Utama'. Setelah itu buka aplikasi dari layar utama.");
+      }
+    }
+
+    // 4. Deteksi jika aplikasi berhasil di-install lewat event browser
+    window.addEventListener('appinstalled', (evt) => {
+      localStorage.setItem('pwa_installed', 'true');
+      window.location.reload();
+    });
+
+
+    // ==========================================
+    // FUNGSI APLIKASI UTAMA
+    // ==========================================
 
     // 1. Fungsi Login via JSONP
     function prosesLogin() {
@@ -83,7 +154,15 @@
       var script = document.createElement('script');
       script.src = GAS_URL + '?action=login&callback=' + callbackName + 
                    '&email=' + encodeURIComponent(email) + 
-                   '&password=' + encodeURIComponent(pass);
+                   '&password=' + encodeURIComponent(pass) + 
+                   '&_=' + new Date().getTime(); // Anti-cache
+      
+      script.onerror = function() {
+        msg.innerText = "Gagal menghubungi server. Periksa koneksi internet.";
+        if (script && script.parentNode) script.parentNode.removeChild(script);
+        delete window[callbackName];
+      };
+
       document.body.appendChild(script);
     }
 
@@ -124,6 +203,9 @@
             html += `<input type="hidden" id="skor_${id}" value="${soals[i].getAttribute("skor")}">`;
           }
           document.getElementById('wadah-soal').innerHTML = html;
+        })
+        .catch(err => {
+          alert("Gagal memuat soal. Pastikan file soal.xml ada.");
         });
     }
 
@@ -169,17 +251,9 @@
       
       document.getElementById('kategori-nilai').innerText = "Kategori: " + ket;
     }
-    
-    // Registrasi Service Worker untuk PWA
-    if ('serviceWorker' in navigator) {
-      window.addEventListener('load', () => {
-        navigator.serviceWorker.register('sw.js')
-          .then(reg => console.log('PWA Service Worker siap!', reg))
-          .catch(err => console.log('PWA gagal: ', err));
-      });
-    }
 
-        function unduhSertifikat() {
+    // 4. Fungsi Sertifikat
+    function unduhSertifikat() {
       var canvas = document.createElement('canvas');
       canvas.width = 1000;
       canvas.height = 700;
@@ -239,52 +313,16 @@
       link.href = canvas.toDataURL('image/png');
       link.click();
     }
-        // --- LOGIKA PWA INSTALL ---
-    let deferredPrompt;
-    const pwaBanner = document.getElementById('pwa-banner');
 
-    // Cek apakah aplikasi dibuka dari Layar Utama (Standalone) atau dari Browser biasa
-    const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
-
-    // Tangkap event install dari browser
-    window.addEventListener('beforeinstallprompt', (e) => {
-      e.preventDefault();
-      deferredPrompt = e;
-      
-      // Tampilkan banner HANYA JIKA belum di-install (masih di dalam browser)
-      if (!isStandalone) {
-        pwaBanner.classList.remove('hidden');
-      }
-    });
-
-    function installPWA() {
-      if (deferredPrompt) {
-        deferredPrompt.prompt();
-        deferredPrompt.userChoice.then((choiceResult) => {
-          if (choiceResult.outcome === 'accepted') {
-            // Jika user klik Install, kita sembunyikan banner
-            pwaBanner.classList.add('hidden');
-            
-            // Beri instruksi tambahan
-            setTimeout(() => {
-              alert("Aplikasi berhasil di-install! Silakan tutup tab browser ini dan buka ikon aplikasi di layar utama HP Anda.");
-            }, 1000);
-            
-          } else {
-            console.log('User menolak install');
-          }
-          deferredPrompt = null;
-        });
-      } else {
-        // JIKA TOMBOL DIKLIK TAPI BROWSER BELUM SIAP (biasanya di iOS)
-        alert("Browser Anda belum mendukung pop-up otomatis. Silakan klik menu titik tiga (Chrome) atau ikon Share (Safari) di browser, lalu pilih 'Tambahkan ke Layar Utama'.");
-      }
+    // Registrasi Service Worker untuk PWA
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('sw.js')
+          .then(reg => console.log('PWA Service Worker siap!', reg))
+          .catch(err => console.log('PWA gagal: ', err));
+      });
     }
 
-    // Jika terdeteksi sudah Standalone, sembunyikan banner (untuk jaga-jaga)
-    if (isStandalone) {
-      pwaBanner.classList.add('hidden');
-    }
   </script>
 </body>
 </html>
