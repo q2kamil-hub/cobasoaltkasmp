@@ -10,7 +10,7 @@
  * agar service worker lama dibuang dan aset baru diambil.
  */
 
-const CACHE_VERSION = 'siaptka-v1';
+const CACHE_VERSION = 'siaptka-v2';
 const APP_SHELL = [
   './',
   './index.html',
