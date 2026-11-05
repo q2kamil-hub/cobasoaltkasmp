@@ -13,6 +13,10 @@
   <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
   <link rel="icon" type="image/png" sizes="16x16" href="favicon-16.png">
   <link rel="apple-touch-icon" href="icon-192.png">
+  <!-- Library laporan (Fase 2) -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
 
   <style>
     :root {
@@ -404,6 +408,7 @@
 <div id="toast"></div>
 
 <script src="api.js"></script>
+<script src="laporan.js"></script>
 <script>
 // ==========================================
 // STATE
@@ -701,38 +706,7 @@ function loadAnalytics(classId) {
 }
 
 function renderAnalytics(res) {
-  var s = res.summary;
-  var html = '';
-
-  html += '<div class="stat-row">';
-  html += '  <div class="stat"><div class="num">' + s.jumlah_selesai + '/' + s.jumlah_murid + '</div><div class="lbl">Selesai</div></div>';
-  html += '  <div class="stat"><div class="num">' + s.rata_rata + '</div><div class="lbl">Rata-rata</div></div>';
-  html += '  <div class="stat"><div class="num">' + s.tertinggi + '</div><div class="lbl">Tertinggi</div></div>';
-  html += '  <div class="stat"><div class="num">' + s.total_soal + '</div><div class="lbl">Jumlah Soal</div></div>';
-  html += '</div>';
-
-  // Per soal
-  html += '<h4 style="margin:20px 0 12px; font-size:15px">Analisis Butir Soal (Soal Paling Sering Salah)</h4>';
-  var sorted = res.per_question.slice().sort(function (a, b) {
-    var ra = a.total ? a.salah / a.total : 0;
-    var rb = b.total ? b.salah / b.total : 0;
-    return rb - ra;
-  });
-
-  html += '<table><thead><tr><th>Soal</th><th>Ringkasan</th><th style="width:35%">Benar</th><th>Salah</th></tr></thead><tbody>';
-  sorted.forEach(function (q) {
-    var pct = q.total ? Math.round((q.benar / q.total) * 100) : 0;
-    var short = String(q.pertanyaan || '').substring(0, 60);
-    html += '<tr>';
-    html += '  <td><strong>#' + esc(q.soal_id) + '</strong><br><small style="color:var(--muted)">' + esc(short) + '...</small></td>';
-    html += '  <td>' + q.total + ' jawaban</td>';
-    html += '  <td><div class="bar-wrap"><div class="bar-fill" style="width:' + pct + '%">' + pct + '%</div></div></td>';
-    html += '  <td>' + q.salah + '</td>';
-    html += '</tr>';
-  });
-  html += '</tbody></table>';
-
-  document.getElementById('laporan-wrap').innerHTML = html;
+  Laporan.render(res, state.currentClass || {});
 }
 
 function toggleClassStatus() {
