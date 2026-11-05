@@ -1,0 +1,773 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#1e3a8a">
+  <title>Dashboard Guru — SiapTKA</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --primary: #1e3a8a;
+      --primary-light: #2563eb;
+      --accent: #f59e0b;
+      --text: #1f2937;
+      --muted: #6b7280;
+      --bg: #f8fafc;
+      --border: #e2e8f0;
+      --success: #10b981;
+      --danger: #ef4444;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Inter', system-ui, sans-serif;
+      color: var(--text); background: var(--bg);
+      min-height: 100vh; line-height: 1.5;
+    }
+    a { text-decoration: none; color: inherit; }
+    .hidden { display: none !important; }
+
+    /* ===== TOPBAR ===== */
+    .topbar {
+      background: white; border-bottom: 1px solid var(--border);
+      position: sticky; top: 0; z-index: 40;
+    }
+    .topbar-inner {
+      max-width: 1200px; margin: 0 auto; padding: 0 20px;
+      display: flex; align-items: center; justify-content: space-between;
+      height: 60px;
+    }
+    .logo {
+      display: flex; align-items: center; gap: 10px;
+      font-weight: 800; font-size: 18px; color: var(--primary);
+    }
+    .logo-mark {
+      width: 32px; height: 32px; border-radius: 8px;
+      background: linear-gradient(135deg, var(--primary), var(--primary-light));
+      color: white; display: grid; place-items: center;
+      font-size: 16px; font-weight: 800;
+    }
+    .user-chip {
+      display: flex; align-items: center; gap: 10px; font-size: 14px;
+    }
+    .user-chip .name { font-weight: 600; }
+    .user-chip .school { font-size: 12px; color: var(--muted); }
+    .btn {
+      padding: 8px 14px; border-radius: 8px; border: none;
+      font-family: inherit; font-weight: 600; font-size: 14px;
+      cursor: pointer; transition: background .15s;
+    }
+    .btn-primary { background: var(--primary); color: white; }
+    .btn-primary:hover { background: var(--primary-light); }
+    .btn-outline { background: white; color: var(--primary); border: 1.5px solid var(--border); }
+    .btn-outline:hover { border-color: var(--primary); }
+    .btn-ghost { background: transparent; color: var(--muted); }
+    .btn-ghost:hover { color: var(--primary); }
+    .btn-danger { background: var(--danger); color: white; }
+    .btn-sm { padding: 6px 10px; font-size: 12px; }
+    .btn:disabled { opacity: .5; cursor: not-allowed; }
+
+    /* ===== LAYOUT ===== */
+    .container {
+      max-width: 1200px; margin: 0 auto; padding: 24px 20px;
+    }
+
+    /* ===== AUTH CARD ===== */
+    .auth-wrap {
+      min-height: 100vh; display: flex; align-items: center; justify-content: center;
+      padding: 20px;
+    }
+    .auth-card {
+      background: white; max-width: 440px; width: 100%;
+      padding: 32px; border-radius: 16px;
+      box-shadow: 0 10px 40px rgba(30,58,138,.10);
+      border: 1px solid var(--border);
+    }
+    .auth-card h2 { font-size: 22px; margin-bottom: 6px; }
+    .auth-card .sub { font-size: 14px; color: var(--muted); margin-bottom: 24px; }
+    .tabs {
+      display: flex; gap: 4px; background: #f1f5f9; padding: 4px;
+      border-radius: 10px; margin-bottom: 20px;
+    }
+    .tab {
+      flex: 1; padding: 8px; text-align: center; font-size: 13px;
+      font-weight: 600; color: var(--muted); border-radius: 7px;
+      cursor: pointer; border: none; background: transparent; font-family: inherit;
+    }
+    .tab.active { background: white; color: var(--primary); box-shadow: 0 1px 3px rgba(0,0,0,.08); }
+    label { display: block; font-size: 13px; font-weight: 600; margin: 12px 0 6px; }
+    input, select {
+      width: 100%; padding: 10px 12px;
+      border: 1px solid var(--border); border-radius: 8px;
+      font-family: inherit; font-size: 14px; outline: none;
+      transition: border-color .15s;
+    }
+    input:focus, select:focus { border-color: var(--primary-light); }
+    .form-row { display: flex; gap: 10px; }
+    .form-row > * { flex: 1; }
+    .error-msg {
+      color: var(--danger); font-size: 13px; margin-top: 12px; text-align: center;
+    }
+    .auth-card .btn-primary { width: 100%; margin-top: 20px; padding: 12px; }
+    .back-link {
+      display: block; text-align: center; margin-top: 18px;
+      font-size: 13px; color: var(--muted);
+    }
+    .back-link:hover { color: var(--primary); }
+
+    /* ===== DASHBOARD ===== */
+    .page-head {
+      display: flex; justify-content: space-between; align-items: flex-end;
+      margin-bottom: 24px; flex-wrap: wrap; gap: 12px;
+    }
+    .page-head h1 { font-size: 24px; }
+    .page-head p { color: var(--muted); font-size: 14px; }
+
+    .class-grid {
+      display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 16px;
+    }
+    .class-card {
+      background: white; border: 1px solid var(--border); border-radius: 14px;
+      padding: 20px; transition: transform .15s, box-shadow .15s; cursor: pointer;
+    }
+    .class-card:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(30,58,138,.08); }
+    .class-card h3 { font-size: 16px; margin-bottom: 6px; }
+    .class-card .meta { font-size: 13px; color: var(--muted); margin-bottom: 14px; }
+    .class-card .kode-badge {
+      display: inline-block; padding: 6px 12px; border-radius: 8px;
+      background: #eff6ff; color: var(--primary);
+      font-weight: 700; font-size: 16px; letter-spacing: 2px;
+      font-family: 'Courier New', monospace;
+    }
+    .status-pill {
+      display: inline-block; padding: 3px 10px; border-radius: 999px;
+      font-size: 11px; font-weight: 700; text-transform: uppercase;
+    }
+    .status-open { background: #dcfce7; color: #166534; }
+    .status-closed { background: #fee2e2; color: #991b1b; }
+    .empty-state {
+      text-align: center; padding: 60px 20px; color: var(--muted);
+    }
+    .empty-state .icon { font-size: 48px; margin-bottom: 12px; }
+
+    /* ===== MODAL ===== */
+    .overlay {
+      position: fixed; inset: 0; background: rgba(15,23,42,.5);
+      display: flex; align-items: center; justify-content: center;
+      z-index: 100; padding: 20px;
+    }
+    .modal {
+      background: white; border-radius: 16px; max-width: 560px; width: 100%;
+      max-height: 90vh; overflow-y: auto; box-shadow: 0 20px 50px rgba(0,0,0,.25);
+    }
+    .modal-wide { max-width: 1000px; }
+    .modal-head {
+      padding: 20px 24px; border-bottom: 1px solid var(--border);
+      display: flex; justify-content: space-between; align-items: center;
+    }
+    .modal-head h3 { font-size: 18px; }
+    .modal-head .close {
+      background: none; border: none; font-size: 24px; cursor: pointer;
+      color: var(--muted); line-height: 1;
+    }
+    .modal-body { padding: 24px; }
+    .modal-foot {
+      padding: 16px 24px; border-top: 1px solid var(--border);
+      display: flex; gap: 10px; justify-content: flex-end;
+    }
+
+    /* ===== TABS (detail kelas) ===== */
+    .dtabs { display: flex; gap: 4px; border-bottom: 1px solid var(--border); margin-bottom: 20px; }
+    .dtab {
+      padding: 10px 16px; border: none; background: none; cursor: pointer;
+      font-family: inherit; font-size: 14px; font-weight: 600; color: var(--muted);
+      border-bottom: 2px solid transparent; margin-bottom: -1px;
+    }
+    .dtab.active { color: var(--primary); border-bottom-color: var(--primary); }
+
+    /* ===== TABEL ===== */
+    table { width: 100%; border-collapse: collapse; font-size: 14px; }
+    th, td { padding: 10px 12px; text-align: left; border-bottom: 1px solid var(--border); }
+    th { font-size: 12px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .04em; }
+    tr:hover td { background: #f8fafc; }
+
+    .pill {
+      display: inline-block; padding: 2px 10px; border-radius: 999px;
+      font-size: 11px; font-weight: 700;
+    }
+    .pill-done { background: #dcfce7; color: #166534; }
+    .pill-pending { background: #fef3c7; color: #92400e; }
+
+    /* ===== STAT CARDS ===== */
+    .stat-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 24px; }
+    .stat {
+      background: white; border: 1px solid var(--border); border-radius: 12px;
+      padding: 16px;
+    }
+    .stat .num { font-size: 24px; font-weight: 800; color: var(--primary); }
+    .stat .lbl { font-size: 12px; color: var(--muted); font-weight: 600; text-transform: uppercase; letter-spacing: .04em; }
+
+    /* ===== BAR ===== */
+    .bar-wrap {
+      background: #f1f5f9; border-radius: 6px; height: 22px;
+      overflow: hidden; position: relative;
+    }
+    .bar-fill {
+      background: linear-gradient(90deg, var(--primary), var(--primary-light));
+      height: 100%; transition: width .3s;
+      display: flex; align-items: center; padding-left: 8px;
+      color: white; font-size: 11px; font-weight: 700;
+    }
+
+    /* ===== TOAST ===== */
+    #toast {
+      position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(20px);
+      background: #1f2937; color: white; padding: 12px 20px; border-radius: 10px;
+      font-size: 14px; opacity: 0; transition: all .25s; z-index: 200;
+      max-width: 90%; text-align: center;
+    }
+    #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+    #toast.error { background: var(--danger); }
+    #toast.success { background: var(--success); }
+
+    @media (max-width: 700px) {
+      .stat-row { grid-template-columns: repeat(2, 1fr); }
+      .page-head { flex-direction: column; align-items: flex-start; }
+      .user-chip .school { display: none; }
+      .form-row { flex-direction: column; gap: 0; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ============ AUTH SCREEN ============ -->
+<div id="auth-screen" class="auth-wrap">
+  <div class="auth-card">
+    <h2 id="auth-title">Masuk Guru</h2>
+    <p class="sub" id="auth-sub">Gunakan email dan password akun Anda.</p>
+
+    <div class="tabs">
+      <button class="tab active" id="tab-login" onclick="switchAuthTab('login')">Masuk</button>
+      <button class="tab" id="tab-activate" onclick="switchAuthTab('activate')">Aktivasi Kode</button>
+    </div>
+
+    <!-- Login form -->
+    <div id="form-login">
+      <label>Email</label>
+      <input type="email" id="login-email" placeholder="guru@sekolah.sch.id" autocomplete="email">
+      <label>Password</label>
+      <input type="password" id="login-password" placeholder="••••••••" autocomplete="current-password">
+      <button class="btn btn-primary" onclick="doLogin()" id="btn-login">Masuk</button>
+    </div>
+
+    <!-- Activate form -->
+    <div id="form-activate" class="hidden">
+      <label>Kode Aktivasi</label>
+      <input type="text" id="act-kode" placeholder="GURU-XXXX-YYYY" style="text-transform:uppercase">
+      <label>Email</label>
+      <input type="email" id="act-email" placeholder="guru@sekolah.sch.id">
+      <label>Nama Lengkap</label>
+      <input type="text" id="act-nama" placeholder="Nama Anda">
+      <label>Sekolah (opsional)</label>
+      <input type="text" id="act-sekolah" placeholder="SMP Negeri 1 ...">
+      <label>Password Baru (min. 6 karakter)</label>
+      <input type="password" id="act-password" placeholder="••••••••">
+      <button class="btn btn-primary" onclick="doActivate()" id="btn-activate">Aktivasi Akun</button>
+    </div>
+
+    <p class="error-msg" id="auth-msg"></p>
+    <a href="index.html" class="back-link">← Kembali ke pilihan peran</a>
+  </div>
+</div>
+
+<!-- ============ DASHBOARD SCREEN ============ -->
+<div id="app-screen" class="hidden">
+  <div class="topbar">
+    <div class="topbar-inner">
+      <div class="logo"><div class="logo-mark">S</div> SiapTKA</div>
+      <div class="user-chip">
+        <div style="text-align:right">
+          <div class="name" id="user-nama">—</div>
+          <div class="school" id="user-sekolah">—</div>
+        </div>
+        <button class="btn btn-ghost btn-sm" onclick="doLogout()">Keluar</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="container">
+    <div class="page-head">
+      <div>
+        <h1>Kelas Saya</h1>
+        <p id="greeting">Selamat datang kembali!</p>
+      </div>
+      <button class="btn btn-primary" onclick="openCreateModal()">+ Buat Kelas</button>
+    </div>
+
+    <div id="class-list"></div>
+  </div>
+</div>
+
+<!-- ============ MODAL: BUAT KELAS ============ -->
+<div id="modal-create" class="overlay hidden">
+  <div class="modal">
+    <div class="modal-head">
+      <h3>Buat Kelas Baru</h3>
+      <button class="close" onclick="closeModal('modal-create')">×</button>
+    </div>
+    <div class="modal-body">
+      <label>Nama Kelas</label>
+      <input type="text" id="new-nama-kelas" placeholder="Contoh: IX-A Matematika">
+
+      <label>Paket Soal</label>
+      <input type="text" id="new-paket-id" placeholder="ID paket (lihat admin)" value="">
+      <small style="color:var(--muted); font-size:12px">Untuk Fase 1, isi ID paket dari sheet Packages. Default tersedia 1 paket bawaan.</small>
+
+      <div class="form-row">
+        <div>
+          <label>Durasi (menit)</label>
+          <input type="number" id="new-durasi" value="60" min="1">
+        </div>
+        <div>
+          <label>PIN (opsional)</label>
+          <input type="text" id="new-pin" placeholder="4 digit" maxlength="6">
+        </div>
+      </div>
+
+      <label style="display:flex; gap:8px; align-items:center; margin-top:16px">
+        <input type="checkbox" id="new-acak" style="width:auto">
+        <span>Acak urutan soal per murid</span>
+      </label>
+      <label style="display:flex; gap:8px; align-items:center; margin-top:8px">
+        <input type="checkbox" id="new-pembahasan" style="width:auto">
+        <span>Tampilkan pembahasan ke murid</span>
+      </label>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-outline" onclick="closeModal('modal-create')">Batal</button>
+      <button class="btn btn-primary" id="btn-create-class" onclick="doCreateClass()">Buat Kelas</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ MODAL: DETAIL KELAS ============ -->
+<div id="modal-detail" class="overlay hidden">
+  <div class="modal modal-wide">
+    <div class="modal-head">
+      <h3 id="detail-title">—</h3>
+      <button class="close" onclick="closeModal('modal-detail')">×</button>
+    </div>
+
+    <div class="modal-body">
+      <div style="display:flex; gap:20px; flex-wrap:wrap; margin-bottom:20px; align-items:center">
+        <div>
+          <div style="font-size:11px; color:var(--muted); font-weight:700; text-transform:uppercase">Kode Kelas</div>
+          <div class="kode-badge" id="detail-kode">—</div>
+        </div>
+        <div id="detail-status-wrap"></div>
+        <div style="margin-left:auto; display:flex; gap:8px">
+          <button class="btn btn-outline btn-sm" id="btn-toggle-status" onclick="toggleClassStatus()">—</button>
+        </div>
+      </div>
+
+      <div class="dtabs">
+        <button class="dtab active" onclick="switchDetailTab('murid')" id="dtab-murid">Murid & Skor</button>
+        <button class="dtab" onclick="switchDetailTab('laporan')" id="dtab-laporan">Laporan</button>
+      </div>
+
+      <!-- TAB MURID -->
+      <div id="dpanel-murid">
+        <div id="murid-table-wrap">Memuat...</div>
+      </div>
+
+      <!-- TAB LAPORAN -->
+      <div id="dpanel-laporan" class="hidden">
+        <div id="laporan-wrap">Memuat...</div>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-outline" onclick="closeModal('modal-detail')">Tutup</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div id="toast"></div>
+
+<script src="api.js"></script>
+<script>
+// ==========================================
+// STATE
+// ==========================================
+var state = {
+  guru: null,
+  classes: [],
+  currentClass: null,
+  currentAnalytics: null,
+  detailTab: 'murid'
+};
+
+// ==========================================
+// BOOT
+// ==========================================
+(function boot() {
+  var s = API.currentTeacher();
+  if (s && s.id) {
+    state.guru = s;
+    showApp();
+    loadClasses();
+  } else {
+    showAuth();
+  }
+})();
+
+function showAuth() {
+  document.getElementById('auth-screen').classList.remove('hidden');
+  document.getElementById('app-screen').classList.add('hidden');
+}
+function showApp() {
+  document.getElementById('auth-screen').classList.add('hidden');
+  document.getElementById('app-screen').classList.remove('hidden');
+  document.getElementById('user-nama').textContent = state.guru.nama || '—';
+  document.getElementById('user-sekolah').textContent = state.guru.sekolah || '—';
+  document.getElementById('greeting').textContent = 'Selamat datang, ' + (state.guru.nama || 'Guru') + '!';
+}
+
+// ==========================================
+// AUTH
+// ==========================================
+function switchAuthTab(tab) {
+  document.getElementById('tab-login').classList.toggle('active', tab === 'login');
+  document.getElementById('tab-activate').classList.toggle('active', tab === 'activate');
+  document.getElementById('form-login').classList.toggle('hidden', tab !== 'login');
+  document.getElementById('form-activate').classList.toggle('hidden', tab !== 'activate');
+  document.getElementById('auth-title').textContent = tab === 'login' ? 'Masuk Guru' : 'Aktivasi Akun';
+  document.getElementById('auth-sub').textContent = tab === 'login'
+    ? 'Gunakan email dan password akun Anda.'
+    : 'Masukkan kode aktivasi yang Anda terima setelah pembelian.';
+  document.getElementById('auth-msg').textContent = '';
+}
+
+function doLogin() {
+  var email = document.getElementById('login-email').value.trim();
+  var pass = document.getElementById('login-password').value;
+  var msg = document.getElementById('auth-msg');
+  var btn = document.getElementById('btn-login');
+
+  if (!email || !pass) { msg.textContent = 'Email dan password wajib diisi.'; return; }
+  msg.textContent = ''; btn.disabled = true; btn.textContent = 'Memeriksa...';
+
+  API.teacherLogin(email, pass).then(function (res) {
+    if (res.ok) {
+      state.guru = res.guru;
+      showApp(); loadClasses();
+    } else {
+      msg.textContent = res.message || 'Login gagal.';
+    }
+  }).catch(function (err) {
+    msg.textContent = API.friendlyError(err);
+  }).finally(function () {
+    btn.disabled = false; btn.textContent = 'Masuk';
+  });
+}
+
+function doActivate() {
+  var kode = document.getElementById('act-kode').value.trim();
+  var email = document.getElementById('act-email').value.trim();
+  var nama = document.getElementById('act-nama').value.trim();
+  var sekolah = document.getElementById('act-sekolah').value.trim();
+  var pass = document.getElementById('act-password').value;
+  var msg = document.getElementById('auth-msg');
+  var btn = document.getElementById('btn-activate');
+
+  if (!kode || !email || !nama || !pass) { msg.textContent = 'Kode, email, nama, dan password wajib diisi.'; return; }
+  if (pass.length < 6) { msg.textContent = 'Password minimal 6 karakter.'; return; }
+
+  msg.textContent = ''; btn.disabled = true; btn.textContent = 'Memproses...';
+
+  API.activateTeacher(email, nama, sekolah, kode, pass).then(function (res) {
+    if (res.ok) {
+      state.guru = res.guru;
+      toast('Aktivasi berhasil! Selamat datang.', 'success');
+      showApp(); loadClasses();
+    } else {
+      msg.textContent = res.message || 'Aktivasi gagal.';
+    }
+  }).catch(function (err) {
+    msg.textContent = API.friendlyError(err);
+  }).finally(function () {
+    btn.disabled = false; btn.textContent = 'Aktivasi Akun';
+  });
+}
+
+function doLogout() {
+  if (!confirm('Keluar dari akun?')) return;
+  API.logout();
+  state.guru = null;
+  showAuth();
+}
+
+// ==========================================
+// KELAS
+// ==========================================
+function loadClasses() {
+  var wrap = document.getElementById('class-list');
+  wrap.innerHTML = '<div class="empty-state">Memuat kelas...</div>';
+
+  API.getMyClasses(state.guru.id).then(function (res) {
+    if (!res.ok) { wrap.innerHTML = '<div class="empty-state">Gagal memuat: ' + res.message + '</div>'; return; }
+    state.classes = res.classes || [];
+    renderClasses();
+  }).catch(function (err) {
+    wrap.innerHTML = '<div class="empty-state">' + API.friendlyError(err) + '</div>';
+  });
+}
+
+function renderClasses() {
+  var wrap = document.getElementById('class-list');
+  if (!state.classes.length) {
+    wrap.innerHTML = '<div class="empty-state"><div class="icon">📚</div><p>Belum ada kelas. Klik "Buat Kelas" untuk memulai.</p></div>';
+    return;
+  }
+  var html = '<div class="class-grid">';
+  state.classes.forEach(function (c) {
+    var status = String(c.status || 'open').toLowerCase();
+    html += '<div class="class-card" onclick="openClassDetail(\'' + c.id + '\')">';
+    html += '  <div style="display:flex; justify-content:space-between; align-items:start; margin-bottom:8px">';
+    html += '    <h3>' + esc(c.nama_kelas) + '</h3>';
+    html += '    <span class="status-pill status-' + status + '">' + status + '</span>';
+    html += '  </div>';
+    html += '  <div class="meta">' + c.jumlah_murid + ' murid · ' + c.durasi_menit + ' menit</div>';
+    html += '  <div class="kode-badge">' + esc(c.kode_kelas) + '</div>';
+    html += '</div>';
+  });
+  html += '</div>';
+  wrap.innerHTML = html;
+}
+
+function openCreateModal() {
+  document.getElementById('new-nama-kelas').value = '';
+  document.getElementById('new-paket-id').value = '';
+  document.getElementById('new-durasi').value = 60;
+  document.getElementById('new-pin').value = '';
+  document.getElementById('new-acak').checked = false;
+  document.getElementById('new-pembahasan').checked = false;
+  document.getElementById('modal-create').classList.remove('hidden');
+}
+
+function doCreateClass() {
+  var nama = document.getElementById('new-nama-kelas').value.trim();
+  var paketId = document.getElementById('new-paket-id').value.trim();
+  var durasi = parseInt(document.getElementById('new-durasi').value, 10) || 60;
+  var pin = document.getElementById('new-pin').value.trim();
+  var acak = document.getElementById('new-acak').checked;
+  var pembahasan = document.getElementById('new-pembahasan').checked;
+
+  if (!nama) { toast('Nama kelas wajib diisi.', 'error'); return; }
+  if (!paketId) { toast('ID paket wajib diisi. Lihat sheet Packages.', 'error'); return; }
+
+  var btn = document.getElementById('btn-create-class');
+  btn.disabled = true; btn.textContent = 'Membuat...';
+
+  API.createClass({
+    teacher_id: state.guru.id,
+    nama_kelas: nama,
+    paket_id: paketId,
+    durasi_menit: durasi,
+    pin: pin,
+    acak: acak ? '1' : '0',
+    tampil_pembahasan: pembahasan ? '1' : '0'
+  }).then(function (res) {
+    if (res.ok) {
+      toast('Kelas dibuat. Kode: ' + res.class.kode_kelas, 'success');
+      closeModal('modal-create');
+      loadClasses();
+    } else {
+      toast(res.message || 'Gagal membuat kelas.', 'error');
+    }
+  }).catch(function (err) {
+    toast(API.friendlyError(err), 'error');
+  }).finally(function () {
+    btn.disabled = false; btn.textContent = 'Buat Kelas';
+  });
+}
+
+// ==========================================
+// DETAIL KELAS
+// ==========================================
+function openClassDetail(classId) {
+  state.currentClass = null;
+  state.currentAnalytics = null;
+  state.detailTab = 'murid';
+
+  document.getElementById('detail-title').textContent = 'Memuat...';
+  document.getElementById('detail-kode').textContent = '—';
+  document.getElementById('murid-table-wrap').innerHTML = 'Memuat...';
+  document.getElementById('laporan-wrap').innerHTML = 'Memuat...';
+  document.getElementById('modal-detail').classList.remove('hidden');
+  switchDetailTab('murid');
+
+  API.getClassDetail(classId).then(function (res) {
+    if (!res.ok) { toast(res.message, 'error'); closeModal('modal-detail'); return; }
+    state.currentClass = res.class;
+    renderClassDetail(res);
+  }).catch(function (err) {
+    toast(API.friendlyError(err), 'error');
+    closeModal('modal-detail');
+  });
+}
+
+function renderClassDetail(res) {
+  var c = res.class;
+  document.getElementById('detail-title').textContent = c.nama_kelas;
+  document.getElementById('detail-kode').textContent = c.kode_kelas;
+
+  var status = String(c.status || 'open').toLowerCase();
+  document.getElementById('detail-status-wrap').innerHTML =
+    '<span class="status-pill status-' + status + '">' + status + '</span>';
+
+  var toggleBtn = document.getElementById('btn-toggle-status');
+  toggleBtn.textContent = status === 'open' ? 'Tutup Kelas' : 'Buka Kelas';
+  toggleBtn.className = status === 'open' ? 'btn btn-danger btn-sm' : 'btn btn-primary btn-sm';
+
+  renderMuridTable(res.students);
+}
+
+function renderMuridTable(students) {
+  var wrap = document.getElementById('murid-table-wrap');
+  if (!students.length) {
+    wrap.innerHTML = '<div class="empty-state"><div class="icon">👥</div><p>Belum ada murid yang bergabung.</p><p style="font-size:13px; margin-top:8px">Bagikan kode kelas di atas kepada murid.</p></div>';
+    return;
+  }
+
+  var selesai = students.filter(function (s) { return s.selesai; }).length;
+
+  var html = '<div class="stat-row" style="grid-template-columns:repeat(3,1fr); margin-bottom:16px">';
+  html += '  <div class="stat"><div class="num">' + students.length + '</div><div class="lbl">Total Murid</div></div>';
+  html += '  <div class="stat"><div class="num">' + selesai + '</div><div class="lbl">Selesai</div></div>';
+  html += '  <div class="stat"><div class="num">' + (students.length - selesai) + '</div><div class="lbl">Belum</div></div>';
+  html += '</div>';
+
+  html += '<table><thead><tr><th>No</th><th>Nama</th><th>Absen</th><th>Status</th><th>Skor</th><th>Durasi</th></tr></thead><tbody>';
+  students.forEach(function (s, i) {
+    var statusPill = s.selesai
+      ? '<span class="pill pill-done">Selesai</span>'
+      : '<span class="pill pill-pending">Belum</span>';
+    var durasi = s.durasi_detik ? Math.floor(s.durasi_detik / 60) + 'm ' + (s.durasi_detik % 60) + 's' : '—';
+    html += '<tr>';
+    html += '  <td>' + (i + 1) + '</td>';
+    html += '  <td>' + esc(s.nama) + '</td>';
+    html += '  <td>' + esc(s.absen || '—') + '</td>';
+    html += '  <td>' + statusPill + '</td>';
+    html += '  <td>' + (s.selesai ? '<strong>' + s.skor + '</strong>' : '—') + '</td>';
+    html += '  <td>' + durasi + '</td>';
+    html += '</tr>';
+  });
+  html += '</tbody></table>';
+
+  wrap.innerHTML = html;
+}
+
+function switchDetailTab(tab) {
+  state.detailTab = tab;
+  document.getElementById('dtab-murid').classList.toggle('active', tab === 'murid');
+  document.getElementById('dtab-laporan').classList.toggle('active', tab === 'laporan');
+  document.getElementById('dpanel-murid').classList.toggle('hidden', tab !== 'murid');
+  document.getElementById('dpanel-laporan').classList.toggle('hidden', tab !== 'laporan');
+
+  if (tab === 'laporan' && !state.currentAnalytics && state.currentClass) {
+    loadAnalytics(state.currentClass.id);
+  }
+}
+
+function loadAnalytics(classId) {
+  document.getElementById('laporan-wrap').innerHTML = 'Memuat laporan...';
+  API.getClassAnalytics(classId).then(function (res) {
+    if (!res.ok) { document.getElementById('laporan-wrap').innerHTML = res.message; return; }
+    state.currentAnalytics = res;
+    renderAnalytics(res);
+  }).catch(function (err) {
+    document.getElementById('laporan-wrap').innerHTML = API.friendlyError(err);
+  });
+}
+
+function renderAnalytics(res) {
+  var s = res.summary;
+  var html = '';
+
+  html += '<div class="stat-row">';
+  html += '  <div class="stat"><div class="num">' + s.jumlah_selesai + '/' + s.jumlah_murid + '</div><div class="lbl">Selesai</div></div>';
+  html += '  <div class="stat"><div class="num">' + s.rata_rata + '</div><div class="lbl">Rata-rata</div></div>';
+  html += '  <div class="stat"><div class="num">' + s.tertinggi + '</div><div class="lbl">Tertinggi</div></div>';
+  html += '  <div class="stat"><div class="num">' + s.total_soal + '</div><div class="lbl">Jumlah Soal</div></div>';
+  html += '</div>';
+
+  // Per soal
+  html += '<h4 style="margin:20px 0 12px; font-size:15px">Analisis Butir Soal (Soal Paling Sering Salah)</h4>';
+  var sorted = res.per_question.slice().sort(function (a, b) {
+    var ra = a.total ? a.salah / a.total : 0;
+    var rb = b.total ? b.salah / b.total : 0;
+    return rb - ra;
+  });
+
+  html += '<table><thead><tr><th>Soal</th><th>Ringkasan</th><th style="width:35%">Benar</th><th>Salah</th></tr></thead><tbody>';
+  sorted.forEach(function (q) {
+    var pct = q.total ? Math.round((q.benar / q.total) * 100) : 0;
+    var short = String(q.pertanyaan || '').substring(0, 60);
+    html += '<tr>';
+    html += '  <td><strong>#' + esc(q.soal_id) + '</strong><br><small style="color:var(--muted)">' + esc(short) + '...</small></td>';
+    html += '  <td>' + q.total + ' jawaban</td>';
+    html += '  <td><div class="bar-wrap"><div class="bar-fill" style="width:' + pct + '%">' + pct + '%</div></div></td>';
+    html += '  <td>' + q.salah + '</td>';
+    html += '</tr>';
+  });
+  html += '</tbody></table>';
+
+  document.getElementById('laporan-wrap').innerHTML = html;
+}
+
+function toggleClassStatus() {
+  if (!state.currentClass) return;
+  var newStatus = String(state.currentClass.status).toLowerCase() === 'open';
+  if (!confirm(newStatus ? 'Tutup kelas? Murid tidak bisa mengirim jawaban setelah ini.' : 'Buka kembali kelas?')) return;
+
+  API.setClassClosed(state.currentClass.id, newStatus).then(function (res) {
+    if (res.ok) {
+      toast(newStatus ? 'Kelas ditutup.' : 'Kelas dibuka.', 'success');
+      openClassDetail(state.currentClass.id);
+    } else {
+      toast(res.message || 'Gagal.', 'error');
+    }
+  }).catch(function (err) {
+    toast(API.friendlyError(err), 'error');
+  });
+}
+
+// ==========================================
+// UTIL
+// ==========================================
+function closeModal(id) {
+  document.getElementById(id).classList.add('hidden');
+}
+function esc(s) {
+  return String(s == null ? '' : s)
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+}
+var toastTimer;
+function toast(msg, type) {
+  var el = document.getElementById('toast');
+  el.textContent = msg;
+  el.className = 'show ' + (type || '');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(function () { el.className = ''; }, 3000);
+}
+</script>
+</body>
+</html>
