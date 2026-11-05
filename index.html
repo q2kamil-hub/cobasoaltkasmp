@@ -4,335 +4,254 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="manifest" href="manifest.json">
-  <meta name="theme-color" content="#2563eb">
-  <title>Latihan Soal TKA</title>
+  <meta name="theme-color" content="#1e3a8a">
+  <title>Masuk — SiapTKA</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
   <style>
-    /* CSS Sederhana */
-    body { font-family: sans-serif; background: #f3f4f6; margin: 0; padding: 20px; }
-    .card { background: white; max-width: 600px; margin: 40px auto; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
-    input { width: 100%; padding: 10px; margin: 8px 0; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
-    button { width: 100%; padding: 10px; background: #2563eb; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; }
+    :root {
+      --primary: #1e3a8a;
+      --primary-light: #2563eb;
+      --accent: #f59e0b;
+      --text: #1f2937;
+      --muted: #6b7280;
+      --bg: #f8fafc;
+      --border: #e2e8f0;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Inter', system-ui, sans-serif;
+      color: var(--text);
+      background: var(--bg);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    a { text-decoration: none; color: inherit; }
+
+    .brand {
+      display: flex; align-items: center; gap: 10px;
+      font-weight: 800; font-size: 22px; color: var(--primary);
+      margin-bottom: 28px;
+    }
+    .logo-mark {
+      width: 36px; height: 36px; border-radius: 10px;
+      background: linear-gradient(135deg, var(--primary), var(--primary-light));
+      color: white; display: grid; place-items: center;
+      font-size: 18px; font-weight: 800;
+    }
+
+    .card {
+      background: white; max-width: 460px; width: 100%;
+      padding: 28px; border-radius: 16px;
+      box-shadow: 0 10px 40px rgba(30,58,138,.10);
+      border: 1px solid var(--border);
+    }
+
+    /* ===== PWA GATE BANNER ===== */
+    #pwa-banner {
+      background: #eff6ff;
+      border: 1px solid #bfdbfe;
+      padding: 24px;
+      border-radius: 12px;
+      text-align: center;
+    }
+    #pwa-banner .icon {
+      font-size: 40px; margin-bottom: 12px;
+    }
+    #pwa-banner h3 {
+      margin: 0 0 8px; color: #1e3a8a; font-size: 18px;
+    }
+    #pwa-banner p {
+      font-size: 14px; color: #1e40af; margin: 8px 0;
+    }
+    #pwa-banner .hint {
+      font-size: 12px; color: var(--muted); margin-top: 14px;
+      line-height: 1.5;
+    }
+
+    /* ===== ROLE SELECTION ===== */
+    #role-section h2 {
+      font-size: 20px; font-weight: 800; text-align: center; margin-bottom: 6px;
+    }
+    #role-section .subtitle {
+      text-align: center; color: var(--muted); font-size: 14px; margin-bottom: 24px;
+    }
+    .role-btn {
+      display: flex; align-items: center; gap: 16px;
+      width: 100%; padding: 18px 20px; margin-bottom: 12px;
+      background: white; border: 2px solid var(--border); border-radius: 12px;
+      cursor: pointer; text-align: left;
+      transition: border-color .15s, transform .15s, box-shadow .15s;
+      font-family: inherit;
+    }
+    .role-btn:hover {
+      border-color: var(--primary-light);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(37,99,235,.12);
+    }
+    .role-btn .role-icon {
+      width: 48px; height: 48px; border-radius: 12px;
+      display: grid; place-items: center; font-size: 24px; flex-shrink: 0;
+    }
+    .role-btn.guru .role-icon { background: #eff6ff; }
+    .role-btn.murid .role-icon { background: #fef3c7; }
+    .role-btn .role-text h4 {
+      font-size: 16px; font-weight: 700; margin-bottom: 2px; color: var(--text);
+    }
+    .role-btn .role-text p {
+      font-size: 13px; color: var(--muted);
+    }
+
+    .btn {
+      display: inline-block; padding: 12px 20px; border-radius: 8px;
+      font-weight: 600; font-size: 14px; cursor: pointer; border: none;
+      transition: background .15s; text-align: center; font-family: inherit;
+      width: 100%;
+    }
+    .btn-primary { background: var(--primary); color: white; }
+    .btn-primary:hover { background: var(--primary-light); }
+
+    .back-link {
+      display: block; text-align: center; margin-top: 20px;
+      font-size: 13px; color: var(--muted);
+    }
+    .back-link:hover { color: var(--primary); }
+
     .hidden { display: none !important; }
-    .soal-box { margin-bottom: 20px; padding-bottom: 15px; border-bottom: 1px dashed #ccc; }
-    .pilihan { display: block; margin: 5px 0; cursor: pointer; }
   </style>
 </head>
 <body>
 
-  <!-- Area Login & Banner Install -->
-  <div id="login-section" class="card">
-    
-    <!-- Banner Install PWA (Gerbang Instalasi) -->
-    <div id="pwa-banner" class="hidden" style="background: #eff6ff; border: 1px solid #bfdbfe; padding: 20px; border-radius: 8px; text-align: center; margin-bottom: 20px;">
-      <h3 style="margin-top: 0; color: #1e3a8a;">Akses Terkunci</h3>
-      <p style="font-size: 14px; color: #1e3a8a;">Untuk alasan keamanan dan kenyamanan, latihan soal hanya dapat diakses melalui Aplikasi.</p>
-      <button onclick="installPWA()" style="background: #2563eb; padding: 12px; font-size: 16px; margin-top: 10px;">📲 Install Aplikasi ke Perangkat</button>
-      <p style="margin-top: 15px; font-size: 12px; color: #6b7280;">Jika Anda sudah menginstal, pastikan Anda membuka aplikasi melalui ikon di Layar Utama (HP) atau Desktop (Laptop), bukan dari link browser ini.</p>
+  <div class="brand">
+    <div class="logo-mark">S</div>
+    SiapTKA
+  </div>
+
+  <div class="card">
+
+    <!-- BANNER INSTALL PWA (gerbang ketat) -->
+    <div id="pwa-banner" class="hidden">
+      <div class="icon">🔒</div>
+      <h3>Akses Terkunci</h3>
+      <p>Untuk alasan keamanan dan kenyamanan, aplikasi hanya dapat diakses melalui <strong>Aplikasi</strong> yang sudah terpasang.</p>
+      <button class="btn btn-primary" style="margin-top:16px" onclick="installPWA()">
+        📲 Install Aplikasi ke Perangkat
+      </button>
+      <p class="hint">
+        Jika sudah menginstal, buka melalui ikon di Layar Utama (HP) atau Desktop—bukan dari link browser ini.
+      </p>
     </div>
 
-    <!-- Form Login (Disembunyikan jika belum install/standalone) -->
-    <div id="form-login-container" class="hidden">
-      <h2>Login Latihan TKA</h2>
-      <input type="email" id="email" placeholder="Email Anda">
-      <input type="password" id="password" placeholder="Password">
-      <button onclick="prosesLogin()">Masuk</button>
-      <p id="login-msg" style="color:red; font-size:14px; text-align:center;"></p>
+    <!-- PILIHAN PERAN (hanya tampil jika sudah terinstall) -->
+    <div id="role-section" class="hidden">
+      <h2>Selamat Datang</h2>
+      <p class="subtitle">Pilih peran Anda untuk melanjutkan</p>
+
+      <button class="role-btn guru" onclick="pilihPeran('guru')">
+        <div class="role-icon">👩‍🏫</div>
+        <div class="role-text">
+          <h4>Saya Guru</h4>
+          <p>Buat kelas & lihat laporan murid</p>
+        </div>
+      </button>
+
+      <button class="role-btn murid" onclick="pilihPeran('murid')">
+        <div class="role-icon">🧑‍🎓</div>
+        <div class="role-text">
+          <h4>Saya Murid</h4>
+          <p>Masuk dengan kode kelas</p>
+        </div>
+      </button>
     </div>
 
   </div>
 
-  <!-- Area Kuis -->
-  <div id="kuis-section" class="card hidden">
-    <h2>Halo, <span id="nama-user"></span>!</h2>
-    <div id="wadah-soal"></div>
-    <button onclick="hitungSkor()">Selesai & Lihat Skor</button>
-  </div>
-
-  <!-- Area Hasil -->
-  <div id="hasil-section" class="card hidden">
-    <h2>Hasil Latihan</h2>
-    <p>Nilai Anda: <strong id="nilai-akhir" style="font-size:24px;"></strong></p>
-    <p id="kategori-nilai"></p>
-    <button onclick="unduhSertifikat()" style="background: #10b981; margin-top: 10px;">Unduh Sertifikat (PNG)</button>
-    <button onclick="location.reload()">Kembali ke Login</button>
-  </div>
+  <a href="landing.html" class="back-link">← Kembali ke halaman utama</a>
 
   <script>
-    // GANTI DENGAN URL WEB APP GAS ANDA
-    var GAS_URL = "https://script.google.com/macros/s/AKfycbwYQpw801zHrr34qNaAjTkIRxDLXR_3ieFvH_MH8QrtcqARqcflzlbbtc8twn-1rtD4/exec";
-    var dataSoal = [];
-    var namaSiswa = "";
-
     // ==========================================
-    // LOGIKA GERBANG INSTALASI PWA (SANGAT KETAT)
+    // PWA GATE (ketat — sama seperti v1)
     // ==========================================
-    
     const pwaBanner = document.getElementById('pwa-banner');
-    const formLogin = document.getElementById('form-login-container');
-    const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
-    const isInstalled = localStorage.getItem('pwa_installed') === 'true';
-    let deferredPrompt;
+    const roleSection = document.getElementById('role-section');
 
-    // Fungsi untuk membuka gerbang form login
+    const isStandalone =
+      window.matchMedia('(display-mode: standalone)').matches ||
+      window.navigator.standalone === true;
+    const isInstalled = localStorage.getItem('pwa_installed') === 'true';
+
+    let deferredPrompt = null;
+
     function bukaGerbang() {
-      formLogin.classList.remove('hidden');
+      roleSection.classList.remove('hidden');
       pwaBanner.classList.add('hidden');
     }
 
-    // 1. Jika dibuka dari ikon aplikasi (Standalone) ATAU pernah di-install di browser ini
+    // 1. Jika sudah standalone / pernah install → langsung buka gerbang
     if (isStandalone || isInstalled) {
       bukaGerbang();
     }
 
-    // 2. Event saat browser siap menampilkan pop-up install
+    // 2. Tangkap event install
     window.addEventListener('beforeinstallprompt', (e) => {
       e.preventDefault();
       deferredPrompt = e;
-      
-      // Selama belum di-install atau belum standalone, tampilkan banner
       if (!isStandalone && !isInstalled) {
         pwaBanner.classList.remove('hidden');
       }
     });
 
-    // 3. Fungsi saat tombol Install diklik
+    // 3. Tombol install
     function installPWA() {
       if (deferredPrompt) {
         deferredPrompt.prompt();
-        deferredPrompt.userChoice.then((choiceResult) => {
-          if (choiceResult.outcome === 'accepted') {
-            // Simpan status bahwa user sudah klik install
+        deferredPrompt.userChoice.then((choice) => {
+          if (choice.outcome === 'accepted') {
             localStorage.setItem('pwa_installed', 'true');
-            // Paksa refresh halaman
-            window.location.reload(); 
+            window.location.reload();
           } else {
-            alert("Anda harus menginstal aplikasi ini untuk bisa login.");
+            alert("Anda harus menginstal aplikasi ini untuk bisa masuk.");
           }
           deferredPrompt = null;
         });
       } else {
-        // Untuk iOS/iPhone atau browser yang tidak punya pop-up otomatis
-        alert("Browser Anda belum mendukung pop-up otomatis. Silakan klik menu titik tiga (Chrome) atau ikon Share (Safari), lalu pilih 'Tambahkan ke Layar Utama'. Setelah itu buka aplikasi dari layar utama.");
+        alert("Browser Anda belum mendukung pop-up otomatis.\n\n" +
+              "Silakan klik menu titik tiga (Chrome) atau ikon Share (Safari), " +
+              "lalu pilih 'Tambahkan ke Layar Utama'. Setelah itu buka aplikasi " +
+              "dari layar utama.");
       }
     }
 
-    // 4. Deteksi jika aplikasi berhasil di-install lewat event browser
-    window.addEventListener('appinstalled', (evt) => {
+    // 4. Deteksi install sukses
+    window.addEventListener('appinstalled', () => {
       localStorage.setItem('pwa_installed', 'true');
       window.location.reload();
     });
 
-
     // ==========================================
-    // FUNGSI APLIKASI UTAMA
+    // PILIH PERAN → redirect
     // ==========================================
-
-    // 1. Fungsi Login via JSONP
-    function prosesLogin() {
-      var email = document.getElementById('email').value;
-      var pass = document.getElementById('password').value;
-      var msg = document.getElementById('login-msg');
-      msg.innerText = "Memeriksa...";
-
-      // Buat nama fungsi callback unik
-      var callbackName = 'jsonp_' + Math.round(100000 * Math.random());
-      
-      window[callbackName] = function(response) {
-                if (response.ok) {
-          namaSiswa = response.nama;
-          document.getElementById('login-section').classList.add('hidden');
-          document.getElementById('kuis-section').classList.remove('hidden');
-          document.getElementById('nama-user').innerText = namaSiswa;
-          
-          // --- TAMBAHKAN KODE INI ---
-          // Peringatan jika login dilakukan di browser biasa (bukan standalone)
-          if (!isStandalone) {
-            setTimeout(() => {
-              alert("Login Berhasil!\n\nCatatan: Anda sedang membuka di dalam browser. Untuk pengalaman terbaik dan agar tidak perlu login ulang, silakan tutup tab ini dan buka aplikasi dari ikon di Layar Utama HP/Desktop Anda.");
-            }, 500);
-          }
-          // ---------------------------
-          
-          muatSoal();
-        } else {
-          msg.innerText = response.message;
-        }
-        document.body.removeChild(script);
-        delete window[callbackName];
-      };
-
-      var script = document.createElement('script');
-      script.src = GAS_URL + '?action=login&callback=' + callbackName + 
-                   '&email=' + encodeURIComponent(email) + 
-                   '&password=' + encodeURIComponent(pass) + 
-                   '&_=' + new Date().getTime(); // Anti-cache
-      
-      script.onerror = function() {
-        msg.innerText = "Gagal menghubungi server. Periksa koneksi internet.";
-        if (script && script.parentNode) script.parentNode.removeChild(script);
-        delete window[callbackName];
-      };
-
-      document.body.appendChild(script);
+    function pilihPeran(peran) {
+      if (peran === 'guru') {
+        window.location.href = 'guru.html';
+      } else {
+        window.location.href = 'murid.html';
+      }
     }
 
-    // 2. Muat Soal dari XML
-    function muatSoal() {
-      fetch('soal.xml')
-        .then(r => r.text())
-        .then(str => {
-          var parser = new DOMParser();
-          var xmlDoc = parser.parseFromString(str, "text/xml");
-          var soals = xmlDoc.getElementsByTagName("soal");
-          
-          var html = "";
-          for (var i = 0; i < soals.length; i++) {
-            var id = soals[i].getAttribute("id");
-            var tipe = soals[i].getAttribute("tipe");
-            var tanya = soals[i].getElementsByTagName("pertanyaan")[0].textContent;
-            
-            html += `<div class="soal-box" id="box-${id}">`;
-            html += `<p><strong>Soal ${id}</strong><br>${tanya}</p>`;
-            
-            if (tipe === "pg") {
-              var pils = soals[i].getElementsByTagName("pilihan");
-              for (var j = 0; j < pils.length; j++) {
-                // Ambil huruf depan (A, B, C, D)
-                var huruf = pils[j].textContent.trim().charAt(0);
-                html += `<label class="pilihan">
-                  <input type="radio" name="jawab_${id}" value="${huruf}"> ${pils[j].textContent}
-                </label>`;
-              }
-            } else {
-              // Isian singkat
-              html += `<input type="text" id="jawab_${id}" style="width:100%; padding:8px; margin-top:5px;" placeholder="Ketik jawaban...">`;
-            }
-            html += `</div>`;
-            // Simpan kunci jawaban di atribut data
-            html += `<input type="hidden" id="kunci_${id}" value="${soals[i].getElementsByTagName("jawaban")[0].textContent}">`;
-            html += `<input type="hidden" id="skor_${id}" value="${soals[i].getAttribute("skor")}">`;
-          }
-          document.getElementById('wadah-soal').innerHTML = html;
-        })
-        .catch(err => {
-          alert("Gagal memuat soal. Pastikan file soal.xml ada.");
-        });
-    }
-
-    // 3. Hitung Skor
-    function hitungSkor() {
-      var totalSkor = 0;
-      var boxes = document.querySelectorAll('.soal-box');
-      
-      boxes.forEach(function(box) {
-        var id = box.id.replace('box-', '');
-        var kunci = document.getElementById('kunci_' + id).value.trim().toLowerCase();
-        var skorPerSoal = parseInt(document.getElementById('skor_' + id).value);
-        var jawabanUser = "";
-
-        // Cek apakah PG atau Isian
-        var radios = document.getElementsByName('jawab_' + id);
-        if (radios.length > 0) {
-          for (var i = 0; i < radios.length; i++) {
-            if (radios[i].checked) jawabanUser = radios[i].value;
-          }
-        } else {
-          jawabanUser = document.getElementById('jawab_' + id).value;
-        }
-
-        // Cocokkan jawaban
-        if (jawabanUser.trim().toLowerCase() === kunci) {
-          totalSkor += skorPerSoal;
-        }
-      });
-
-      // Tampilkan Hasil
-      document.getElementById('kuis-section').classList.add('hidden');
-      document.getElementById('hasil-section').classList.remove('hidden');
-      
-      // Karena total maksimal di file txt Anda 100, kita langsung pakai totalSkor
-      document.getElementById('nilai-akhir').innerText = totalSkor;
-      
-      var ket = "";
-      if (totalSkor >= 85) ket = "Sangat Baik";
-      else if (totalSkor >= 70) ket = "Baik";
-      else if (totalSkor >= 55) ket = "Cukup";
-      else ket = "Perlu Bimbingan";
-      
-      document.getElementById('kategori-nilai').innerText = "Kategori: " + ket;
-    }
-
-    // 4. Fungsi Sertifikat
-    function unduhSertifikat() {
-      var canvas = document.createElement('canvas');
-      canvas.width = 1000;
-      canvas.height = 700;
-      var ctx = canvas.getContext('2d');
-
-      // Background
-      ctx.fillStyle = '#ffffff';
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
-      
-      // Border Emas
-      ctx.strokeStyle = '#d97706';
-      ctx.lineWidth = 15;
-      ctx.strokeRect(20, 20, canvas.width - 40, canvas.height - 40);
-
-      // Teks Judul
-      ctx.fillStyle = '#1f2937';
-      ctx.font = 'bold 50px sans-serif';
-      ctx.textAlign = 'center';
-      ctx.fillText('SERTIFIKAT LATIHAN', canvas.width / 2, 150);
-      ctx.font = '40px sans-serif';
-      ctx.fillText('TES KEMAMPUAN AKADEMIK (TKA) SMP', canvas.width / 2, 210);
-
-      // Teks Diberikan Kepada
-      ctx.fillStyle = '#6b7280';
-      ctx.font = '30px sans-serif';
-      ctx.fillText('Diberikan kepada:', canvas.width / 2, 320);
-
-      // Nama Siswa
-      ctx.fillStyle = '#2563eb';
-      ctx.font = 'bold 60px sans-serif';
-      ctx.fillText(namaSiswa, canvas.width / 2, 400);
-
-      // Nilai
-      var nilai = document.getElementById('nilai-akhir').innerText;
-      var kategori = document.getElementById('kategori-nilai').innerText;
-      
-      ctx.fillStyle = '#1f2937';
-      ctx.font = '35px sans-serif';
-      ctx.fillText('Dengan Nilai Akhir:', canvas.width / 2, 480);
-      
-      ctx.fillStyle = '#d97706';
-      ctx.font = 'bold 70px sans-serif';
-      ctx.fillText(nilai, canvas.width / 2, 560);
-      
-      ctx.fillStyle = '#4b5563';
-      ctx.font = '30px sans-serif';
-      ctx.fillText(kategori, canvas.width / 2, 610);
-
-      // Tanggal
-      var date = new Date().toLocaleDateString('id-ID', { year: 'numeric', month: 'long', day: 'numeric' });
-      ctx.font = '20px sans-serif';
-      ctx.fillText('Diterbitkan pada: ' + date, canvas.width / 2, 660);
-
-      // Unduh
-      var link = document.createElement('a');
-      link.download = 'Sertifikat_TKA_' + namaSiswa.replace(/\s+/g, '_') + '.png';
-      link.href = canvas.toDataURL('image/png');
-      link.click();
-    }
-
-    // Registrasi Service Worker untuk PWA
+    // Service worker
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
-        navigator.serviceWorker.register('sw.js')
-          .then(reg => console.log('PWA Service Worker siap!', reg))
-          .catch(err => console.log('PWA gagal: ', err));
+        navigator.serviceWorker.register('sw.js').catch(() => {});
       });
     }
-
   </script>
 </body>
 </html>
