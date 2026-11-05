@@ -21,6 +21,12 @@
 
   <!-- Area Login -->
   <div id="login-section" class="card">
+    <!-- Banner Install PWA -->
+    <div id="pwa-banner" class="hidden" style="background: #eff6ff; border: 1px solid #bfdbfe; padding: 15px; border-radius: 6px; margin-bottom: 20px; text-align: center;">
+      <p style="margin: 0 0 10px 0; font-size: 14px; color: #1e3a8a;">Ingin aplikasi ini di HP Anda?</p>
+      <button onclick="installPWA()" style="background: #2563eb; padding: 8px;">📲 Install ke Layar Utama</button>
+      <p style="margin: 10px 0 0 0; font-size: 11px; color: #6b7280;">Setelah di-install, tutup tab ini dan buka ikon aplikasi di layar utama HP.</p>
+    </div>
     <h2>Login Latihan TKA</h2>
     <input type="email" id="email" placeholder="Email Anda">
     <input type="password" id="password" placeholder="Password">
@@ -232,6 +238,52 @@
       link.download = 'Sertifikat_TKA_' + namaSiswa.replace(/\s+/g, '_') + '.png';
       link.href = canvas.toDataURL('image/png');
       link.click();
+    }
+        // --- LOGIKA PWA INSTALL ---
+    let deferredPrompt;
+    const pwaBanner = document.getElementById('pwa-banner');
+
+    // Cek apakah aplikasi dibuka dari Layar Utama (Standalone) atau dari Browser biasa
+    const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+
+    // Tangkap event install dari browser
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();
+      deferredPrompt = e;
+      
+      // Tampilkan banner HANYA JIKA belum di-install (masih di dalam browser)
+      if (!isStandalone) {
+        pwaBanner.classList.remove('hidden');
+      }
+    });
+
+    function installPWA() {
+      if (deferredPrompt) {
+        deferredPrompt.prompt();
+        deferredPrompt.userChoice.then((choiceResult) => {
+          if (choiceResult.outcome === 'accepted') {
+            // Jika user klik Install, kita sembunyikan banner
+            pwaBanner.classList.add('hidden');
+            
+            // Beri instruksi tambahan
+            setTimeout(() => {
+              alert("Aplikasi berhasil di-install! Silakan tutup tab browser ini dan buka ikon aplikasi di layar utama HP Anda.");
+            }, 1000);
+            
+          } else {
+            console.log('User menolak install');
+          }
+          deferredPrompt = null;
+        });
+      } else {
+        // JIKA TOMBOL DIKLIK TAPI BROWSER BELUM SIAP (biasanya di iOS)
+        alert("Browser Anda belum mendukung pop-up otomatis. Silakan klik menu titik tiga (Chrome) atau ikon Share (Safari) di browser, lalu pilih 'Tambahkan ke Layar Utama'.");
+      }
+    }
+
+    // Jika terdeteksi sudah Standalone, sembunyikan banner (untuk jaga-jaga)
+    if (isStandalone) {
+      pwaBanner.classList.add('hidden');
     }
   </script>
 </body>
