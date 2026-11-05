@@ -230,8 +230,17 @@
       return _request('submitResult', payload);
     },
 
+    // ---------- PAKET (guru) ----------
+
+    /**
+     * Daftar paket soal aktif untuk dropdown di guru.html.
+     * @param {string} teacherId (opsional) — untuk validasi
+     */
+    getPackagesForTeacher: function (teacherId) {
+      return _request('getPackagesForTeacher', { teacher_id: teacherId || '' });
+    },
+
     // ---------- ADMIN (super admin) ----------
-    // Nanti dipakai admin.html di Fase 3, tapi sudah disiapkan di sini.
 
     adminGenerateActivation: function (token, jumlah) {
       return _request('adminGenerateActivation', { token: token, jumlah: jumlah || 1 });
@@ -239,6 +248,46 @@
 
     adminListTeachers: function (token) {
       return _request('adminListTeachers', { token: token });
+    },
+
+    adminListPackages: function (token) {
+      return _request('adminListPackages', { token: token });
+    },
+
+    /**
+     * Tambah paket baru.
+     * @param {object} payload { token, nama_paket, file_xml, harga }
+     */
+    adminCreatePackage: function (payload) {
+      return _request('adminCreatePackage', payload);
+    },
+
+    /**
+     * Aktifkan / nonaktifkan paket.
+     * @param {string} token
+     * @param {string} id
+     * @param {boolean} aktif
+     */
+    adminTogglePackage: function (token, id, aktif) {
+      return _request('adminTogglePackage', {
+        token: token,
+        id: id,
+        aktif: aktif ? '1' : '0'
+      });
+    },
+
+    /**
+     * Hapus paket (ditolak jika masih dipakai kelas).
+     */
+    adminDeletePackage: function (token, id) {
+      return _request('adminDeletePackage', { token: token, id: id });
+    },
+
+    /**
+     * Statistik aktivasi & guru.
+     */
+    getActivationStats: function (token) {
+      return _request('getActivationStats', { token: token });
     },
 
     // ---------- UTIL ----------
