@@ -1,0 +1,659 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#1e3a8a">
+  <title>Admin — SiapTKA</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --primary: #1e3a8a;
+      --primary-light: #2563eb;
+      --accent: #f59e0b;
+      --text: #1f2937;
+      --muted: #6b7280;
+      --bg: #f8fafc;
+      --border: #e2e8f0;
+      --success: #10b981;
+      --danger: #ef4444;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Inter', system-ui, sans-serif;
+      color: var(--text); background: var(--bg);
+      min-height: 100vh; line-height: 1.5;
+    }
+    a { text-decoration: none; color: inherit; }
+    .hidden { display: none !important; }
+
+    /* ===== TOPBAR ===== */
+    .topbar { background: white; border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 40; }
+    .topbar-inner {
+      max-width: 1200px; margin: 0 auto; padding: 0 20px;
+      display: flex; align-items: center; justify-content: space-between; height: 60px;
+    }
+    .logo { display: flex; align-items: center; gap: 10px; font-weight: 800; font-size: 18px; color: var(--primary); }
+    .logo-mark {
+      width: 32px; height: 32px; border-radius: 8px;
+      background: linear-gradient(135deg, var(--primary), var(--primary-light));
+      color: white; display: grid; place-items: center; font-size: 16px; font-weight: 800;
+    }
+    .badge-admin {
+      display: inline-block; padding: 3px 10px; border-radius: 999px;
+      background: #fef3c7; color: #92400e; font-size: 11px; font-weight: 700;
+      text-transform: uppercase; letter-spacing: .04em; margin-left: 8px;
+    }
+    .btn {
+      padding: 8px 14px; border-radius: 8px; border: none;
+      font-family: inherit; font-weight: 600; font-size: 14px;
+      cursor: pointer; transition: background .15s;
+    }
+    .btn-primary { background: var(--primary); color: white; }
+    .btn-primary:hover { background: var(--primary-light); }
+    .btn-outline { background: white; color: var(--primary); border: 1.5px solid var(--border); }
+    .btn-outline:hover { border-color: var(--primary); }
+    .btn-ghost { background: transparent; color: var(--muted); }
+    .btn-ghost:hover { color: var(--primary); }
+    .btn-danger { background: var(--danger); color: white; }
+    .btn-danger:hover { background: #dc2626; }
+    .btn-sm { padding: 5px 10px; font-size: 12px; }
+    .btn:disabled { opacity: .5; cursor: not-allowed; }
+
+    /* ===== LAYOUT ===== */
+    .container { max-width: 1200px; margin: 0 auto; padding: 24px 20px; }
+
+    /* ===== AUTH ===== */
+    .auth-wrap { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px; }
+    .auth-card {
+      background: white; max-width: 420px; width: 100%; padding: 32px;
+      border-radius: 16px; box-shadow: 0 10px 40px rgba(30,58,138,.10); border: 1px solid var(--border);
+    }
+    .auth-card h2 { font-size: 22px; margin-bottom: 6px; }
+    .auth-card .sub { font-size: 14px; color: var(--muted); margin-bottom: 24px; }
+    label { display: block; font-size: 13px; font-weight: 600; margin: 14px 0 6px; }
+    input, select {
+      width: 100%; padding: 10px 12px; border: 1px solid var(--border);
+      border-radius: 8px; font-family: inherit; font-size: 14px; outline: none;
+    }
+    input:focus, select:focus { border-color: var(--primary-light); }
+    .auth-card .btn-primary { width: 100%; margin-top: 20px; padding: 12px; }
+    .error-msg { color: var(--danger); font-size: 13px; margin-top: 12px; text-align: center; }
+
+    /* ===== TABS ===== */
+    .tabs { display: flex; gap: 4px; border-bottom: 1px solid var(--border); margin-bottom: 24px; flex-wrap: wrap; }
+    .tab {
+      padding: 12px 18px; border: none; background: none; cursor: pointer;
+      font-family: inherit; font-size: 14px; font-weight: 600; color: var(--muted);
+      border-bottom: 2px solid transparent; margin-bottom: -1px;
+    }
+    .tab.active { color: var(--primary); border-bottom-color: var(--primary); }
+
+    /* ===== STAT ===== */
+    .stat-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 24px; }
+    .stat { background: white; border: 1px solid var(--border); border-radius: 12px; padding: 16px; }
+    .stat .num { font-size: 24px; font-weight: 800; color: var(--primary); }
+    .stat .lbl { font-size: 12px; color: var(--muted); font-weight: 600; text-transform: uppercase; letter-spacing: .04em; }
+
+    /* ===== TABEL ===== */
+    .table-wrap { background: white; border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
+    table { width: 100%; border-collapse: collapse; font-size: 14px; }
+    th, td { padding: 12px 14px; text-align: left; border-bottom: 1px solid var(--border); }
+    th { font-size: 12px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .04em; background: #f8fafc; }
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: #f8fafc; }
+
+    .pill {
+      display: inline-block; padding: 2px 10px; border-radius: 999px;
+      font-size: 11px; font-weight: 700;
+    }
+    .pill-active { background: #dcfce7; color: #166534; }
+    .pill-inactive { background: #fee2e2; color: #991b1b; }
+    .pill-unused { background: #fef3c7; color: #92400e; }
+    .pill-used { background: #e2e8f0; color: #475569; }
+
+    /* ===== PANEL ===== */
+    .panel { background: white; border: 1px solid var(--border); border-radius: 12px; padding: 24px; margin-bottom: 20px; }
+    .panel h3 { font-size: 16px; margin-bottom: 16px; }
+    .form-row { display: flex; gap: 10px; flex-wrap: wrap; align-items: flex-end; }
+    .form-row > div { flex: 1; min-width: 160px; }
+    .form-row .btn { flex-shrink: 0; }
+
+    .code-list {
+      background: #f8fafc; border: 1px solid var(--border); border-radius: 10px;
+      padding: 16px; margin-top: 16px; max-height: 280px; overflow-y: auto;
+    }
+    .code-list code {
+      display: block; padding: 6px 10px; background: white; border-radius: 6px;
+      font-family: 'Courier New', monospace; font-weight: 700; font-size: 14px;
+      color: var(--primary); margin-bottom: 6px; letter-spacing: 1px;
+      border: 1px solid var(--border);
+    }
+
+    .empty { padding: 40px; text-align: center; color: var(--muted); }
+
+    /* ===== MODAL ===== */
+    .overlay { position: fixed; inset: 0; background: rgba(15,23,42,.5); display: flex; align-items: center; justify-content: center; z-index: 100; padding: 20px; }
+    .modal { background: white; border-radius: 16px; max-width: 460px; width: 100%; box-shadow: 0 20px 50px rgba(0,0,0,.25); }
+    .modal-head { padding: 20px 24px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+    .modal-head h3 { font-size: 18px; }
+    .modal-head .close { background: none; border: none; font-size: 24px; cursor: pointer; color: var(--muted); line-height: 1; }
+    .modal-body { padding: 24px; }
+    .modal-foot { padding: 16px 24px; border-top: 1px solid var(--border); display: flex; gap: 10px; justify-content: flex-end; }
+
+    /* ===== TOAST ===== */
+    #toast {
+      position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(20px);
+      background: #1f2937; color: white; padding: 12px 20px; border-radius: 10px;
+      font-size: 14px; opacity: 0; transition: all .25s; z-index: 200; max-width: 90%; text-align: center;
+    }
+    #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+    #toast.error { background: var(--danger); }
+    #toast.success { background: var(--success); }
+
+    @media (max-width: 800px) {
+      .stat-row { grid-template-columns: repeat(2, 1fr); }
+      .form-row { flex-direction: column; align-items: stretch; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ============ AUTH ============ -->
+<div id="auth-screen" class="auth-wrap">
+  <div class="auth-card">
+    <h2>Panel Admin</h2>
+    <p class="sub">Masukkan token admin untuk mengakses panel.</p>
+    <label>Token Admin</label>
+    <input type="password" id="admin-token-input" placeholder="Token dari Code.gs" autocomplete="off">
+    <button class="btn btn-primary" onclick="doLogin()" id="btn-auth">Masuk</button>
+    <p class="error-msg" id="auth-msg"></p>
+  </div>
+</div>
+
+<!-- ============ APP ============ -->
+<div id="app-screen" class="hidden">
+  <div class="topbar">
+    <div class="topbar-inner">
+      <div class="logo">
+        <div class="logo-mark">S</div> SiapTKA <span class="badge-admin">Admin</span>
+      </div>
+      <button class="btn btn-ghost btn-sm" onclick="doLogout()">Keluar</button>
+    </div>
+  </div>
+
+  <div class="container">
+
+    <!-- STAT CARDS -->
+    <div class="stat-row" id="stat-row">
+      <div class="stat"><div class="num" id="st-guru">—</div><div class="lbl">Total Guru</div></div>
+      <div class="stat"><div class="num" id="st-guru-aktif">—</div><div class="lbl">Guru Aktif</div></div>
+      <div class="stat"><div class="num" id="st-aktivasi-tersedia">—</div><div class="lbl">Kode Tersedia</div></div>
+      <div class="stat"><div class="num" id="st-aktivasi-terpakai">—</div><div class="lbl">Kode Terpakai</div></div>
+    </div>
+
+    <!-- TABS -->
+    <div class="tabs">
+      <button class="tab active" onclick="switchTab('aktivasi')" id="tab-aktivasi">Aktivasi</button>
+      <button class="tab" onclick="switchTab('guru')" id="tab-guru">Guru</button>
+      <button class="tab" onclick="switchTab('paket')" id="tab-paket">Paket Soal</button>
+    </div>
+
+    <!-- ===== TAB: AKTIVASI ===== -->
+    <div id="panel-aktivasi">
+      <div class="panel">
+        <h3>Generate Kode Aktivasi</h3>
+        <div class="form-row">
+          <div>
+            <label style="margin-top:0">Jumlah (1–100)</label>
+            <input type="number" id="gen-jumlah" value="5" min="1" max="100">
+          </div>
+          <button class="btn btn-primary" onclick="doGenerateCodes()" id="btn-gen">Generate</button>
+        </div>
+        <div class="code-list hidden" id="gen-result-wrap">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px">
+            <strong style="font-size:13px">Kode Baru</strong>
+            <button class="btn btn-outline btn-sm" onclick="copyCodes()">Salin Semua</button>
+          </div>
+          <div id="gen-result"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== TAB: GURU ===== -->
+    <div id="panel-guru" class="hidden">
+      <div class="panel" style="padding:16px 20px">
+        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px">
+          <h3 style="margin:0">Daftar Guru</h3>
+          <button class="btn btn-outline btn-sm" onclick="exportTeachersCsv()">📥 Ekspor CSV</button>
+        </div>
+      </div>
+      <div class="table-wrap" id="guru-table-wrap">
+        <div class="empty">Memuat...</div>
+      </div>
+    </div>
+
+    <!-- ===== TAB: PAKET ===== -->
+    <div id="panel-paket" class="hidden">
+      <div class="panel" style="padding:16px 20px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px">
+        <h3 style="margin:0">Paket Soal</h3>
+        <button class="btn btn-primary btn-sm" onclick="openCreatePackage()">+ Tambah Paket</button>
+      </div>
+      <div class="table-wrap" id="paket-table-wrap">
+        <div class="empty">Memuat...</div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ============ MODAL: TAMBAH PAKET ============ -->
+<div id="modal-paket" class="overlay hidden">
+  <div class="modal">
+    <div class="modal-head">
+      <h3>Tambah Paket Soal</h3>
+      <button class="close" onclick="closeModal('modal-paket')">×</button>
+    </div>
+    <div class="modal-body">
+      <label>Nama Paket</label>
+      <input type="text" id="pk-nama" placeholder="Contoh: IPA Dasar">
+
+      <label>Nama File XML di Google Drive</label>
+      <input type="text" id="pk-file" placeholder="ipa.xml">
+      <small style="color:var(--muted); font-size:12px">Pastikan file sudah di-upload ke Drive & set sharing "Anyone with the link".</small>
+
+      <label>Harga (opsional)</label>
+      <input type="number" id="pk-harga" value="0" min="0">
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-outline" onclick="closeModal('modal-paket')">Batal</button>
+      <button class="btn btn-primary" id="btn-save-paket" onclick="doCreatePackage()">Simpan</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ MODAL: KONFIRMASI HAPUS ============ -->
+<div id="modal-confirm" class="overlay hidden">
+  <div class="modal">
+    <div class="modal-head">
+      <h3>Hapus Paket?</h3>
+      <button class="close" onclick="closeModal('modal-confirm')">×</button>
+    </div>
+    <div class="modal-body">
+      <p id="confirm-text" style="font-size:14px; color:var(--muted)"></p>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-outline" onclick="closeModal('modal-confirm')">Batal</button>
+      <button class="btn btn-danger" id="btn-confirm-delete">Hapus</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script src="api.js"></script>
+<script>
+// ==========================================
+// STATE
+// ==========================================
+var state = {
+  token: null,
+  teachers: [],
+  packages: [],
+  lastGeneratedCodes: []
+};
+
+// ==========================================
+// BOOT
+// ==========================================
+(function boot() {
+  var saved = localStorage.getItem('siaptka_admin_token');
+  if (saved) {
+    state.token = saved;
+    showApp();
+    loadAll();
+  } else {
+    showAuth();
+  }
+})();
+
+function showAuth() {
+  document.getElementById('auth-screen').classList.remove('hidden');
+  document.getElementById('app-screen').classList.add('hidden');
+}
+function showApp() {
+  document.getElementById('auth-screen').classList.add('hidden');
+  document.getElementById('app-screen').classList.remove('hidden');
+}
+
+// ==========================================
+// AUTH
+// ==========================================
+function doLogin() {
+  var token = document.getElementById('admin-token-input').value.trim();
+  var msg = document.getElementById('auth-msg');
+  var btn = document.getElementById('btn-auth');
+
+  if (!token) { msg.textContent = 'Token wajib diisi.'; return; }
+  msg.textContent = ''; btn.disabled = true; btn.textContent = 'Memeriksa...';
+
+  // Verifikasi token dengan memanggil API ringan
+  API.getActivationStats(token).then(function (res) {
+    if (res.ok) {
+      state.token = token;
+      localStorage.setItem('siaptka_admin_token', token);
+      showApp();
+      loadAll();
+    } else {
+      msg.textContent = res.message || 'Token salah.';
+    }
+  }).catch(function (err) {
+    msg.textContent = API.friendlyError(err);
+  }).finally(function () {
+    btn.disabled = false; btn.textContent = 'Masuk';
+  });
+}
+
+function doLogout() {
+  if (!confirm('Keluar dari panel admin?')) return;
+  localStorage.removeItem('siaptka_admin_token');
+  state.token = null;
+  showAuth();
+}
+
+// ==========================================
+// LOAD DATA
+// ==========================================
+function loadAll() {
+  loadStats();
+  loadTeachers();
+  loadPackages();
+}
+
+function loadStats() {
+  API.getActivationStats(state.token).then(function (res) {
+    if (!res.ok) { toast(res.message, 'error'); return; }
+    var s = res.stats;
+    document.getElementById('st-guru').textContent = s.guru_total;
+    document.getElementById('st-guru-aktif').textContent = s.guru_aktif;
+    document.getElementById('st-aktivasi-tersedia').textContent = s.aktivasi_tersedia;
+    document.getElementById('st-aktivasi-terpakai').textContent = s.aktivasi_terpakai;
+  }).catch(function (err) { toast(API.friendlyError(err), 'error'); });
+}
+
+// ==========================================
+// TAB SWITCH
+// ==========================================
+function switchTab(tab) {
+  ['aktivasi', 'guru', 'paket'].forEach(function (t) {
+    document.getElementById('tab-' + t).classList.toggle('active', t === tab);
+    document.getElementById('panel-' + t).classList.toggle('hidden', t !== tab);
+  });
+}
+
+// ==========================================
+// AKTIVASI
+// ==========================================
+function doGenerateCodes() {
+  var jumlah = parseInt(document.getElementById('gen-jumlah').value, 10) || 1;
+  var btn = document.getElementById('btn-gen');
+  btn.disabled = true; btn.textContent = 'Membuat...';
+
+  API.adminGenerateActivation(state.token, jumlah).then(function (res) {
+    if (res.ok) {
+      state.lastGeneratedCodes = res.codes || [];
+      var wrap = document.getElementById('gen-result-wrap');
+      var list = document.getElementById('gen-result');
+      list.innerHTML = state.lastGeneratedCodes.map(function (c) {
+        return '<code>' + esc(c) + '</code>';
+      }).join('');
+      wrap.classList.remove('hidden');
+      toast(res.codes.length + ' kode berhasil dibuat.', 'success');
+      loadStats(); // refresh statistik
+    } else {
+      toast(res.message || 'Gagal membuat kode.', 'error');
+    }
+  }).catch(function (err) {
+    toast(API.friendlyError(err), 'error');
+  }).finally(function () {
+    btn.disabled = false; btn.textContent = 'Generate';
+  });
+}
+
+function copyCodes() {
+  if (!state.lastGeneratedCodes.length) return;
+  var text = state.lastGeneratedCodes.join('\n');
+  if (navigator.clipboard) {
+    navigator.clipboard.writeText(text).then(function () {
+      toast('Kode disalin ke clipboard.', 'success');
+    }).catch(function () { fallbackCopy(text); });
+  } else {
+    fallbackCopy(text);
+  }
+}
+
+function fallbackCopy(text) {
+  var ta = document.createElement('textarea');
+  ta.value = text;
+  document.body.appendChild(ta);
+  ta.select();
+  try { document.execCommand('copy'); toast('Kode disalin.', 'success'); }
+  catch (e) { toast('Gagal menyalin. Salin manual.', 'error'); }
+  document.body.removeChild(ta);
+}
+
+// ==========================================
+// GURU
+// ==========================================
+function loadTeachers() {
+  var wrap = document.getElementById('guru-table-wrap');
+  wrap.innerHTML = '<div class="empty">Memuat...</div>';
+
+  API.adminListTeachers(state.token).then(function (res) {
+    if (!res.ok) { wrap.innerHTML = '<div class="empty">' + esc(res.message) + '</div>'; return; }
+    state.teachers = res.list || [];
+    renderTeachers();
+  }).catch(function (err) {
+    wrap.innerHTML = '<div class="empty">' + esc(API.friendlyError(err)) + '</div>';
+  });
+}
+
+function renderTeachers() {
+  var wrap = document.getElementById('guru-table-wrap');
+  if (!state.teachers.length) {
+    wrap.innerHTML = '<div class="empty">Belum ada guru terdaftar.</div>';
+    return;
+  }
+  var now = Date.now();
+  var html = '<table><thead><tr>' +
+    '<th>No</th><th>Nama</th><th>Email</th><th>Sekolah</th><th>Status</th><th>Aktif Sampai</th>' +
+    '</tr></thead><tbody>';
+  state.teachers.forEach(function (t, i) {
+    var aktif = t.aktif_sampai && new Date(t.aktif_sampai).getTime() > now;
+    var statusPill = aktif
+      ? '<span class="pill pill-active">Aktif</span>'
+      : '<span class="pill pill-inactive">Expired</span>';
+    var tanggal = t.aktif_sampai ? formatDate(t.aktif_sampai) : '—';
+    html += '<tr>';
+    html += '<td>' + (i + 1) + '</td>';
+    html += '<td><strong>' + esc(t.nama) + '</strong></td>';
+    html += '<td>' + esc(t.email) + '</td>';
+    html += '<td>' + esc(t.sekolah || '—') + '</td>';
+    html += '<td>' + statusPill + '</td>';
+    html += '<td>' + tanggal + '</td>';
+    html += '</tr>';
+  });
+  html += '</tbody></table>';
+  wrap.innerHTML = html;
+}
+
+function exportTeachersCsv() {
+  if (!state.teachers.length) { toast('Belum ada data guru.', 'error'); return; }
+  var rows = [['Nama', 'Email', 'Sekolah', 'Aktif Sampai']];
+  state.teachers.forEach(function (t) {
+    rows.push([t.nama, t.email, t.sekolah || '', t.aktif_sampai || '']);
+  });
+  var csv = rows.map(function (r) {
+    return r.map(function (c) { return '"' + String(c).replace(/"/g, '""') + '"'; }).join(',');
+  }).join('\r\n');
+
+  var blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
+  var a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'Daftar_Guru_' + dateStamp() + '.csv';
+  a.click();
+  URL.revokeObjectURL(a.href);
+  toast('CSV berhasil diunduh.', 'success');
+}
+
+// ==========================================
+// PAKET
+// ==========================================
+function loadPackages() {
+  var wrap = document.getElementById('paket-table-wrap');
+  wrap.innerHTML = '<div class="empty">Memuat...</div>';
+
+  API.adminListPackages(state.token).then(function (res) {
+    if (!res.ok) { wrap.innerHTML = '<div class="empty">' + esc(res.message) + '</div>'; return; }
+    state.packages = res.packages || [];
+    renderPackages();
+  }).catch(function (err) {
+    wrap.innerHTML = '<div class="empty">' + esc(API.friendlyError(err)) + '</div>';
+  });
+}
+
+function renderPackages() {
+  var wrap = document.getElementById('paket-table-wrap');
+  if (!state.packages.length) {
+    wrap.innerHTML = '<div class="empty">Belum ada paket soal.</div>';
+    return;
+  }
+  var html = '<table><thead><tr>' +
+    '<th>Nama Paket</th><th>File XML</th><th>Soal</th><th>Harga</th><th>Status</th><th>Aksi</th>' +
+    '</tr></thead><tbody>';
+  state.packages.forEach(function (p) {
+    var statusPill = p.aktif
+      ? '<span class="pill pill-active">Aktif</span>'
+      : '<span class="pill pill-inactive">Nonaktif</span>';
+    var soal = p.jumlah_soal == null ? '—' : p.jumlah_soal;
+    var harga = p.harga > 0 ? 'Rp ' + Number(p.harga).toLocaleString('id-ID') : 'Gratis';
+
+    html += '<tr>';
+    html += '<td><strong>' + esc(p.nama_paket) + '</strong></td>';
+    html += '<td><code style="font-size:12px">' + esc(p.file_xml) + '</code></td>';
+    html += '<td>' + soal + '</td>';
+    html += '<td>' + harga + '</td>';
+    html += '<td>' + statusPill + '</td>';
+    html += '<td style="white-space:nowrap">';
+    html += '  <button class="btn btn-outline btn-sm" onclick="togglePackage(\'' + p.id + '\',' + (!p.aktif) + ')">' + (p.aktif ? 'Nonaktifkan' : 'Aktifkan') + '</button> ';
+    html += '  <button class="btn btn-ghost btn-sm" style="color:var(--danger)" onclick="confirmDeletePackage(\'' + p.id + '\',\'' + esc(p.nama_paket).replace(/'/g, "\\'") + '\')">Hapus</button>';
+    html += '</td>';
+    html += '</tr>';
+  });
+  html += '</tbody></table>';
+  wrap.innerHTML = html;
+}
+
+function openCreatePackage() {
+  document.getElementById('pk-nama').value = '';
+  document.getElementById('pk-file').value = '';
+  document.getElementById('pk-harga').value = 0;
+  document.getElementById('modal-paket').classList.remove('hidden');
+}
+
+function doCreatePackage() {
+  var nama = document.getElementById('pk-nama').value.trim();
+  var file = document.getElementById('pk-file').value.trim();
+  var harga = parseInt(document.getElementById('pk-harga').value, 10) || 0;
+
+  if (!nama || !file) { toast('Nama dan file wajib diisi.', 'error'); return; }
+
+  var btn = document.getElementById('btn-save-paket');
+  btn.disabled = true; btn.textContent = 'Menyimpan...';
+
+  API.adminCreatePackage({
+    token: state.token,
+    nama_paket: nama,
+    file_xml: file,
+    harga: harga
+  }).then(function (res) {
+    if (res.ok) {
+      toast('Paket ditambahkan.', 'success');
+      closeModal('modal-paket');
+      loadPackages();
+    } else {
+      toast(res.message || 'Gagal menyimpan.', 'error');
+    }
+  }).catch(function (err) {
+    toast(API.friendlyError(err), 'error');
+  }).finally(function () {
+    btn.disabled = false; btn.textContent = 'Simpan';
+  });
+}
+
+function togglePackage(id, aktif) {
+  API.adminTogglePackage(state.token, id, aktif).then(function (res) {
+    if (res.ok) {
+      toast(aktif ? 'Paket diaktifkan.' : 'Paket dinonaktifkan.', 'success');
+      loadPackages();
+    } else {
+      toast(res.message || 'Gagal.', 'error');
+    }
+  }).catch(function (err) { toast(API.friendlyError(err), 'error'); });
+}
+
+function confirmDeletePackage(id, nama) {
+  document.getElementById('confirm-text').textContent =
+    'Paket "' + nama + '" akan dihapus permanen. Lanjutkan?';
+  var btn = document.getElementById('btn-confirm-delete');
+  btn.onclick = function () { doDeletePackage(id); };
+  document.getElementById('modal-confirm').classList.remove('hidden');
+}
+
+function doDeletePackage(id) {
+  closeModal('modal-confirm');
+  API.adminDeletePackage(state.token, id).then(function (res) {
+    if (res.ok) {
+      toast('Paket dihapus.', 'success');
+      loadPackages();
+    } else {
+      toast(res.message || 'Gagal menghapus.', 'error');
+    }
+  }).catch(function (err) { toast(API.friendlyError(err), 'error'); });
+}
+
+// ==========================================
+// UTIL
+// ==========================================
+function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
+function esc(s) {
+  return String(s == null ? '' : s)
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+}
+function formatDate(iso) {
+  try {
+    return new Date(iso).toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' });
+  } catch (e) { return String(iso).substring(0, 10); }
+}
+function dateStamp() {
+  var d = new Date();
+  var p = function (n) { return (n < 10 ? '0' : '') + n; };
+  return d.getFullYear() + p(d.getMonth() + 1) + p(d.getDate());
+}
+var toastTimer;
+function toast(msg, type) {
+  var el = document.getElementById('toast');
+  el.textContent = msg;
+  el.className = 'show ' + (type || '');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(function () { el.className = ''; }, 3000);
+}
+</script>
+</body>
+</html>
