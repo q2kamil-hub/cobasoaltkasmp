@@ -10,9 +10,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
-  <link rel="icon" type="image/png" sizes="16x16" href="favicon-16.png">
-  <link rel="apple-touch-icon" href="icon-192.png">
+
   <!-- Library laporan (Fase 2) -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
@@ -333,8 +331,10 @@
       <input type="text" id="new-nama-kelas" placeholder="Contoh: IX-A Matematika">
 
       <label>Paket Soal</label>
-      <input type="text" id="new-paket-id" placeholder="ID paket (lihat admin)" value="">
-      <small style="color:var(--muted); font-size:12px">Untuk Fase 1, isi ID paket dari sheet Packages. Default tersedia 1 paket bawaan.</small>
+      <select id="new-paket-id">
+        <option value="">Memuat paket...</option>
+      </select>
+      <small style="color:var(--muted); font-size:12px">Hanya paket aktif yang ditampilkan.</small>
 
       <div class="form-row">
         <div>
@@ -418,7 +418,9 @@ var state = {
   classes: [],
   currentClass: null,
   currentAnalytics: null,
-  detailTab: 'murid'
+  detailTab: 'murid',
+  packages: [],
+  packagesLoaded: false
 };
 
 // ==========================================
@@ -546,12 +548,14 @@ function renderClasses() {
   var html = '<div class="class-grid">';
   state.classes.forEach(function (c) {
     var status = String(c.status || 'open').toLowerCase();
+    var namaPaket = getNamaPaket(c.paket_id);
     html += '<div class="class-card" onclick="openClassDetail(\'' + c.id + '\')">';
     html += '  <div style="display:flex; justify-content:space-between; align-items:start; margin-bottom:8px">';
     html += '    <h3>' + esc(c.nama_kelas) + '</h3>';
     html += '    <span class="status-pill status-' + status + '">' + status + '</span>';
     html += '  </div>';
-    html += '  <div class="meta">' + c.jumlah_murid + ' murid · ' + c.durasi_menit + ' menit</div>';
+    html += '  <div class="meta">' + c.jumlah_murid + ' murid · ' + c.durasi_menit + ' menit' +
+            (namaPaket ? ' · ' + esc(namaPaket) : '') + '</div>';
     html += '  <div class="kode-badge">' + esc(c.kode_kelas) + '</div>';
     html += '</div>';
   });
@@ -559,26 +563,80 @@ function renderClasses() {
   wrap.innerHTML = html;
 }
 
+function getNamaPaket(paketId) {
+  for (var i = 0; i < state.packages.length; i++) {
+    if (state.packages[i].id === paketId) return state.packages[i].nama_paket;
+  }
+  return '';
+}
+
+// ==========================================
+// PAKET SOAL (dropdown)
+// ==========================================
+function loadPackagesForDropdown() {
+  var sel = document.getElementById('new-paket-id');
+  if (!state.guru) return;
+
+  if (state.packagesLoaded) {
+    renderPaketOptions();
+    return;
+  }
+
+  sel.innerHTML = '<option value="">Memuat paket...</option>';
+  sel.disabled = true;
+
+  API.getPackagesForTeacher(state.guru.id).then(function (res) {
+    sel.disabled = false;
+    if (!res.ok) {
+      sel.innerHTML = '<option value="">Gagal memuat paket</option>';
+      toast(res.message || 'Gagal memuat paket.', 'error');
+      return;
+    }
+    state.packages = res.packages || [];
+    state.packagesLoaded = true;
+    renderPaketOptions();
+  }).catch(function (err) {
+    sel.disabled = false;
+    sel.innerHTML = '<option value="">' + API.friendlyError(err) + '</option>';
+  });
+}
+
+function renderPaketOptions() {
+  var sel = document.getElementById('new-paket-id');
+  if (!state.packages.length) {
+    sel.innerHTML = '<option value="">Belum ada paket aktif. Hubungi admin.</option>';
+    return;
+  }
+  var html = '<option value="">— Pilih Paket —</option>';
+  state.packages.forEach(function (p) {
+    html += '<option value="' + esc(p.id) + '">' + esc(p.nama_paket) + '</option>';
+  });
+  sel.innerHTML = html;
+}
+
+// ==========================================
+// BUAT KELAS
+// ==========================================
 function openCreateModal() {
   document.getElementById('new-nama-kelas').value = '';
-  document.getElementById('new-paket-id').value = '';
   document.getElementById('new-durasi').value = 60;
   document.getElementById('new-pin').value = '';
   document.getElementById('new-acak').checked = false;
   document.getElementById('new-pembahasan').checked = false;
   document.getElementById('modal-create').classList.remove('hidden');
+  loadPackagesForDropdown();
 }
 
 function doCreateClass() {
   var nama = document.getElementById('new-nama-kelas').value.trim();
-  var paketId = document.getElementById('new-paket-id').value.trim();
+  var paketId = document.getElementById('new-paket-id').value;
   var durasi = parseInt(document.getElementById('new-durasi').value, 10) || 60;
   var pin = document.getElementById('new-pin').value.trim();
   var acak = document.getElementById('new-acak').checked;
   var pembahasan = document.getElementById('new-pembahasan').checked;
 
   if (!nama) { toast('Nama kelas wajib diisi.', 'error'); return; }
-  if (!paketId) { toast('ID paket wajib diisi. Lihat sheet Packages.', 'error'); return; }
+  if (!paketId) { toast('Pilih paket soal terlebih dahulu.', 'error'); return; }
 
   var btn = document.getElementById('btn-create-class');
   btn.disabled = true; btn.textContent = 'Membuat...';
@@ -706,6 +764,7 @@ function loadAnalytics(classId) {
 }
 
 function renderAnalytics(res) {
+  // Delegasikan ke laporan.js (Fase 2)
   Laporan.render(res, state.currentClass || {});
 }
 
