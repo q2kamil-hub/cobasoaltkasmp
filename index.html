@@ -138,11 +138,21 @@
       var callbackName = 'jsonp_' + Math.round(100000 * Math.random());
       
       window[callbackName] = function(response) {
-        if (response.ok) {
+                if (response.ok) {
           namaSiswa = response.nama;
           document.getElementById('login-section').classList.add('hidden');
           document.getElementById('kuis-section').classList.remove('hidden');
           document.getElementById('nama-user').innerText = namaSiswa;
+          
+          // --- TAMBAHKAN KODE INI ---
+          // Peringatan jika login dilakukan di browser biasa (bukan standalone)
+          if (!isStandalone) {
+            setTimeout(() => {
+              alert("Login Berhasil!\n\nCatatan: Anda sedang membuka di dalam browser. Untuk pengalaman terbaik dan agar tidak perlu login ulang, silakan tutup tab ini dan buka aplikasi dari ikon di Layar Utama HP/Desktop Anda.");
+            }, 500);
+          }
+          // ---------------------------
+          
           muatSoal();
         } else {
           msg.innerText = response.message;
