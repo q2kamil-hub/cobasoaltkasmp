@@ -10,7 +10,7 @@
  * agar service worker lama dibuang dan aset baru diambil.
  */
 
-const CACHE_VERSION = 'siaptka-v2';
+const CACHE_VERSION = 'siaptka-v3';
 const APP_SHELL = [
   './',
   './index.html',
@@ -22,6 +22,8 @@ const APP_SHELL = [
   './icon-192.png',
   './icon-512.png',
   './icon-maskable-512.png',
+  './favicon-32.png',
+  './favicon-16.png',
   // Catatan: paket XML TIDAK di-precache di sini.
   // Diambil saat runtime (network-first) agar bisa update tanpa redeploy SW.
 ];
