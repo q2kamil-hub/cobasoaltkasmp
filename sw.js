@@ -8,23 +8,31 @@
  *
  * Naikkan CACHE_VERSION setiap kali deploy perubahan besar
  * agar service worker lama dibuang dan aset baru diambil.
+ *
+ * Riwayat versi:
+ *  v1 — Fase 1 awal (landing, index, guru, murid)
+ *  v2 — tambah ikon baru (192, 512, maskable)
+ *  v3 — tambah favicon
+ *  v4 — tambah laporan.js (Fase 2)
+ *  v5 — tambah admin.html (Fase 3)
  */
 
-const CACHE_VERSION = 'siaptka-v4';
+const CACHE_VERSION = 'siaptka-v5';
 const APP_SHELL = [
   './',
   './index.html',
   './landing.html',
   './guru.html',
   './murid.html',
+  './admin.html',
   './api.js',
+  './laporan.js',
   './manifest.json',
   './icon-192.png',
   './icon-512.png',
   './icon-maskable-512.png',
   './favicon-32.png',
   './favicon-16.png',
-  './laporan.js',
   // Catatan: paket XML TIDAK di-precache di sini.
   // Diambil saat runtime (network-first) agar bisa update tanpa redeploy SW.
 ];
@@ -66,25 +74,32 @@ self.addEventListener('fetch', (event) => {
   // 1) Hanya tangani GET (POST/PUT ke GAS diteruskan langsung)
   if (req.method !== 'GET') return;
 
-  // 2) BYPASS: semua request ke GAS (script.google.com / script.googleusercontent.com)
+  // 2) BYPASS: semua request ke GAS
   if (url.hostname === 'script.google.com' ||
       url.hostname === 'script.googleusercontent.com') {
     return; // biarkan browser menangani langsung
   }
 
-  // 3) BYPASS: Google Fonts (biar selalu fresh & tidak boros cache)
+  // 3) BYPASS: Google Fonts
   if (url.hostname === 'fonts.googleapis.com' ||
       url.hostname === 'fonts.gstatic.com') {
     return;
   }
 
-  // 4) Paket soal XML → network-first, fallback cache
+  // 4) BYPASS: CDN library (Chart.js, SheetJS, jsPDF)
+  //    Biar selalu fresh, tidak boros cache, dan tidak bentrok saat offline
+  if (url.hostname === 'cdn.jsdelivr.net' ||
+      url.hostname === 'cdnjs.cloudflare.com') {
+    return;
+  }
+
+  // 5) Paket soal XML → network-first, fallback cache
   if (url.pathname.endsWith('.xml')) {
     event.respondWith(networkFirst(req));
     return;
   }
 
-  // 5) Navigasi HTML & aset app shell → cache-first + revalidate
+  // 6) Navigasi HTML & aset app shell → cache-first + revalidate
   if (req.mode === 'navigate' ||
       req.destination === 'document' ||
       /\.(?:html|js|css|png|svg|ico|json|webmanifest)$/i.test(url.pathname)) {
@@ -92,7 +107,7 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // 6) Lainnya → biarkan browser
+  // 7) Lainnya → biarkan browser
 });
 
 // ==========================================
@@ -109,7 +124,6 @@ async function cacheFirstRevalidate(request) {
 
   const fetchPromise = fetch(request)
     .then((response) => {
-      // Simpan hanya response OK & same-origin atau CORS-friendly
       if (response && response.status === 200 && response.type !== 'opaque') {
         cache.put(request, response.clone());
       }
@@ -118,15 +132,13 @@ async function cacheFirstRevalidate(request) {
     .catch(() => null);
 
   if (cached) {
-    // Sajikan cache segera, update di background
-    fetchPromise; // jangan di-await
+    fetchPromise; // update di background, jangan di-await
     return cached;
   }
 
   const fresh = await fetchPromise;
   if (fresh) return fresh;
 
-  // Fallback terakhir: halaman offline sederhana
   return offlineFallback();
 }
 
