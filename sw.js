@@ -19,7 +19,9 @@ const APP_SHELL = [
   './murid.html',
   './api.js',
   './manifest.json',
-  './icon.png',
+  './icon-192.png',
+  './icon-512.png',
+  './icon-maskable-512.png',
   // Catatan: paket XML TIDAK di-precache di sini.
   // Diambil saat runtime (network-first) agar bisa update tanpa redeploy SW.
 ];
