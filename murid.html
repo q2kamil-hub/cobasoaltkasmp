@@ -218,6 +218,30 @@
     #toast.error { background: var(--danger); }
     #toast.success { background: var(--success); }
 
+        /* ===== PEMBAHASAN ===== */
+    .pembahasan-section { margin-top: 24px; }
+    .pembahasan-title {
+      font-size: 16px; font-weight: 800; margin-bottom: 12px;
+      color: var(--primary);
+    }
+    .pembahasan-item {
+      border: 1px solid var(--border); border-radius: 12px;
+      padding: 16px; margin-bottom: 12px; background: #fafafa;
+    }
+    .pembahasan-item.benar { border-left: 4px solid var(--success); }
+    .pembahasan-item.salah { border-left: 4px solid var(--danger); }
+    .pembahasan-q {
+      font-size: 14px; font-weight: 600; margin-bottom: 10px; line-height: 1.5;
+    }
+    .pembahasan-row {
+      display: flex; justify-content: space-between; gap: 10px;
+      font-size: 13px; padding: 4px 0;
+    }
+    .pembahasan-row .label { color: var(--muted); }
+    .pembahasan-row .val { font-weight: 700; }
+    .pembahasan-row .val.benar { color: var(--success); }
+    .pembahasan-row .val.salah { color: var(--danger); }
+    
     @media (max-width: 600px) {
       .wrap { padding: 12px; }
       .card, .soal-card { padding: 20px; }
@@ -243,6 +267,9 @@
 
     <label>Nomor Absen (opsional)</label>
     <input type="number" id="join-absen" placeholder="Contoh: 12" min="1">
+
+    <label>PIN Kelas (jika ada)</label>
+    <input type="text" id="join-pin" class="kode-input" placeholder="••••" maxlength="10" autocomplete="off">
 
     <button class="btn btn-primary btn-block" id="btn-join" onclick="doJoin()" style="margin-top:20px">
       Mulai Latihan
@@ -296,6 +323,7 @@
     <p style="text-align:center; color:var(--muted); font-size:14px; margin-top:16px" id="res-msg">
       Jawaban Anda telah dikirim ke guru.
     </p>
+    <div id="pembahasan-container" class="pembahasan-section hidden"></div>
     <button class="btn btn-outline btn-block" onclick="location.reload()" style="margin-top:20px">
       Selesai
     </button>
@@ -340,6 +368,7 @@ function doJoin() {
   var kode = document.getElementById('join-kode').value.trim().toUpperCase();
   var nama = document.getElementById('join-nama').value.trim();
   var absen = document.getElementById('join-absen').value.trim();
+  var pin = document.getElementById('join-pin').value.trim();
   var msg = document.getElementById('join-msg');
   var btn = document.getElementById('btn-join');
 
@@ -348,7 +377,7 @@ function doJoin() {
 
   msg.textContent = ''; btn.disabled = true; btn.textContent = 'Memeriksa...';
 
-  API.joinClass(kode, nama, absen).then(function (res) {
+  API.joinClass(kode, nama, absen, pin).then(function (res) {
     if (!res.ok) { msg.textContent = res.message || 'Gagal masuk.'; return; }
     state.student = res.student;
     state.cls = res.class;
@@ -592,13 +621,12 @@ function doSubmit() {
     student_id: state.student.id,
     jawaban: JSON.stringify(state.answers),
     durasi_detik: durasi
-  }).then(function (res) {
+    }).then(function (res) {
     if (res.ok) {
-      showResult(res.skor);
+      showResult(res.skor, null, res.pembahasan);
     } else {
-      // Izinkan ulang jika gagal bisnis (mis. sudah submit sebelumnya)
       if (String(res.message || '').toLowerCase().indexOf('sudah') >= 0) {
-        showResult(0, res.message);
+        showResult(0, res.message, null);
       } else {
         toast(res.message || 'Gagal mengirim.', 'error');
         state.submitted = false;
@@ -612,7 +640,7 @@ function doSubmit() {
   });
 }
 
-function showResult(skor, customMsg) {
+function showResult(skor, customMsg, pembahasan) {
   document.getElementById('quiz-screen').classList.add('hidden');
   document.getElementById('result-screen').classList.remove('hidden');
 
@@ -634,7 +662,36 @@ function showResult(skor, customMsg) {
 
   if (customMsg) document.getElementById('res-msg').textContent = customMsg;
 
+  // Render pembahasan jika ada
+  if (pembahasan && pembahasan.length) {
+    renderPembahasan(pembahasan);
+  }
+
   window.scrollTo(0, 0);
+}
+
+function renderPembahasan(list) {
+  var container = document.getElementById('pembahasan-container');
+  var html = '<div class="pembahasan-title">📖 Pembahasan Jawaban</div>';
+
+  list.forEach(function (item, i) {
+    var cls = item.benar ? 'benar' : 'salah';
+    var statusIcon = item.benar ? '✅' : '❌';
+    html += '<div class="pembahasan-item ' + cls + '">';
+    html += '  <div class="pembahasan-q">' + statusIcon + ' ' + (i + 1) + '. ' + esc(item.pertanyaan) + '</div>';
+    html += '  <div class="pembahasan-row">';
+    html += '    <span class="label">Jawaban Anda</span>';
+    html += '    <span class="val ' + (item.benar ? 'benar' : 'salah') + '">' + esc(item.jawaban_user || '—') + '</span>';
+    html += '  </div>';
+    html += '  <div class="pembahasan-row">';
+    html += '    <span class="label">Kunci Jawaban</span>';
+    html += '    <span class="val benar">' + esc(item.kunci) + '</span>';
+    html += '  </div>';
+    html += '</div>';
+  });
+
+  container.innerHTML = html;
+  container.classList.remove('hidden');
 }
 
 // ==========================================
@@ -659,6 +716,9 @@ document.getElementById('join-kode').addEventListener('keypress', function (e) {
   if (e.key === 'Enter') document.getElementById('join-nama').focus();
 });
 document.getElementById('join-nama').addEventListener('keypress', function (e) {
+  if (e.key === 'Enter') doJoin();
+});
+document.getElementById('join-pin').addEventListener('keypress', function (e) {
   if (e.key === 'Enter') doJoin();
 });
 
