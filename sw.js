@@ -15,9 +15,10 @@
  *  v3 — tambah favicon
  *  v4 — tambah laporan.js (Fase 2)
  *  v5 — tambah admin.html (Fase 3)
+ *  v6 — tambah head.js (Fase 4: favicon terpusat)
  */
 
-const CACHE_VERSION = 'siaptka-v5';
+const CACHE_VERSION = 'siaptka-v6';
 const APP_SHELL = [
   './',
   './index.html',
@@ -27,6 +28,7 @@ const APP_SHELL = [
   './admin.html',
   './api.js',
   './laporan.js',
+  './head.js',
   './manifest.json',
   './icon-192.png',
   './icon-512.png',
