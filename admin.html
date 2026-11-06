@@ -230,7 +230,10 @@
       <div class="panel" style="padding:16px 20px">
         <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px">
           <h3 style="margin:0">Daftar Guru</h3>
-          <button class="btn btn-outline btn-sm" onclick="exportTeachersCsv()">📥 Ekspor CSV</button>
+          <div style="display:flex; gap:8px; flex-wrap:wrap">
+            <button class="btn btn-outline btn-sm" onclick="exportTeachersCsv()">📥 Ekspor CSV</button>
+            <button class="btn btn-outline btn-sm" onclick="exportUnusedCodesCsv()">📥 Unduh Kode Unused</button>
+          </div>
         </div>
       </div>
       <div class="table-wrap" id="guru-table-wrap">
@@ -471,7 +474,7 @@ function renderTeachers() {
   }
   var now = Date.now();
   var html = '<table><thead><tr>' +
-    '<th>No</th><th>Nama</th><th>Email</th><th>Sekolah</th><th>Status</th><th>Aktif Sampai</th>' +
+    '<th>No</th><th>Nama</th><th>Email</th><th>Sekolah</th><th>Status</th><th>Aktif Sampai</th><th>Aksi</th>' +
     '</tr></thead><tbody>';
   state.teachers.forEach(function (t, i) {
     var aktif = t.aktif_sampai && new Date(t.aktif_sampai).getTime() > now;
@@ -486,6 +489,7 @@ function renderTeachers() {
     html += '<td>' + esc(t.sekolah || '—') + '</td>';
     html += '<td>' + statusPill + '</td>';
     html += '<td>' + tanggal + '</td>';
+    html += '<td><button class="btn btn-outline btn-sm" onclick="resetTeacherActive(\'' + t.id + '\',\'' + esc(t.nama).replace(/'/g, "\\'") + '\')">Reset +365 hari</button></td>';
     html += '</tr>';
   });
   html += '</tbody></table>';
@@ -509,6 +513,42 @@ function exportTeachersCsv() {
   a.click();
   URL.revokeObjectURL(a.href);
   toast('CSV berhasil diunduh.', 'success');
+}
+
+function resetTeacherActive(teacherId, nama) {
+  if (!confirm('Perpanjang masa aktif "' + nama + '" selama 365 hari?')) return;
+
+  API.adminResetTeacherActive(state.token, teacherId, 365).then(function (res) {
+    if (res.ok) {
+      toast('Masa aktif diperpanjang hingga ' + formatDate(res.aktif_sampai), 'success');
+      loadTeachers();
+      loadStats();
+    } else {
+      toast(res.message || 'Gagal reset.', 'error');
+    }
+  }).catch(function (err) { toast(API.friendlyError(err), 'error'); });
+}
+
+function exportUnusedCodesCsv() {
+  API.adminListUnusedActivations(state.token).then(function (res) {
+    if (!res.ok) { toast(res.message || 'Gagal memuat kode.', 'error'); return; }
+    var codes = res.codes || [];
+    if (!codes.length) { toast('Tidak ada kode unused.', 'error'); return; }
+
+    var rows = [['Kode Aktivasi']];
+    codes.forEach(function (c) { rows.push([c.kode]); });
+    var csv = rows.map(function (r) {
+      return r.map(function (c) { return '"' + String(c).replace(/"/g, '""') + '"'; }).join(',');
+    }).join('\r\n');
+
+    var blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
+    var a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'Kode_Unused_' + dateStamp() + '.csv';
+    a.click();
+    URL.revokeObjectURL(a.href);
+    toast(codes.length + ' kode unused diunduh.', 'success');
+  }).catch(function (err) { toast(API.friendlyError(err), 'error'); });
 }
 
 // ==========================================
