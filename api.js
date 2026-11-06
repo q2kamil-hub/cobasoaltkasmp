@@ -202,11 +202,12 @@
      * Murid join kelas dengan kode + nama.
      * @returns {Promise<{ok:boolean, student?:{id,nama}, class?:{id,nama_kelas,paket_id}, message?:string}>}
      */
-    joinClass: function (kodeKelas, nama, absen) {
+    joinClass: function (kodeKelas, nama, absen, pin) {
       return _request('joinClass', {
         kode_kelas: kodeKelas,
         nama: nama,
-        absen: absen || ''
+        absen: absen || '',
+        pin: pin || ''
       });
     },
 
@@ -222,9 +223,12 @@
       });
     },
 
-    /**
+     /**
      * Submit jawaban murid.
      * @param {object} payload { class_id, student_id, jawaban (JSON string), durasi_detik }
+     * @returns {Promise<{ok:boolean, skor?:number, pembahasan?:Array, message?:string}>}
+     *   pembahasan hanya ada jika kelas.tampil_pembahasan = 1:
+     *   [{ soal_id, pertanyaan, jawaban_user, kunci, benar, skor }]
      */
     submitResult: function (payload) {
       return _request('submitResult', payload);
