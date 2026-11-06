@@ -287,6 +287,16 @@
       return _request('adminDeletePackage', { token: token, id: id });
     },
 
+    adminResetTeacherActive: function (token, teacherId, tambahHari) {
+      return _request('adminResetTeacherActive', {
+        token: token, teacher_id: teacherId, tambah_hari: tambahHari || 365
+      });
+    },
+
+    adminListUnusedActivations: function (token) {
+      return _request('adminListUnusedActivations', { token: token });
+    },
+
     /**
      * Statistik aktivasi & guru.
      */
